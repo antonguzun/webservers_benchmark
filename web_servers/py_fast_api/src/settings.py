@@ -6,7 +6,7 @@ import sentry_sdk
 DEBUG = False
 
 MYSQL_URI = os.environ.get("MYSQL_URI", "fake")
-POSTGRES_URI = os.environ.get("POSTGRES_URI", "postgresql+psycopg2://postgres:pass@postgres/webservers_bench")
+POSTGRES_URI = os.environ.get("POSTGRES_URI", "postgresql://postgres:pass@localhost:15432/webservers_bench")
 
 
 class Databases(str, Enum):
@@ -23,7 +23,7 @@ match CHOSEN_DB:
     case Databases.POSTGRES_ALCHEMY:
         DATABASE_URI = POSTGRES_URI
     case Databases.POSTGRES_RAW:
-        DATABASE_URI = POSTGRES_URI
+        DATABASE_URI = "postgresql://postgres:pass@localhost:15432/webservers_bench"
     case _:
         raise NotImplementedError(f"Database not implemented: {CHOSEN_DB}")
 

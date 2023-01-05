@@ -3,4 +3,7 @@ from asyncpg.pool import Pool
 
 
 async def create_session(uri: str) -> Pool:
-    return await create_pool(uri)
+    try:
+        return await create_pool(dsn=uri)
+    except Exception as e:
+        raise Exception("error during asyncpg pool creation") from e

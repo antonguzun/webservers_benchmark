@@ -2,6 +2,7 @@ version: "3.3"
 services:
   rabbitmq_for_webservers_bech:
     image: rabbitmq:3.11.5-management
+    network_mode: "host"
     environment:
       RABBITMQ_DEFAULT_USER: user
       RABBITMQ_DEFAULT_PASS: pass
@@ -9,17 +10,11 @@ services:
     ports:
       - "15672:15672"
       - "5672:5672"
-    networks:
-      - custom
   pg_for_bech:
-      image: postgres:15.1
-      environment:
-          - POSTGRES_PASSWORD=pass
-          - POSTGRES_DB=webservers_bench
-      ports:
-        - "15432:5432"
-      networks:
-        - custom
-networks:
-  custom:
-    driver: bridge
+    network_mode: "host"
+    image: postgres:15.1
+    environment:
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=webservers_bench
+    ports:
+      - "15432:5432"
