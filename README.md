@@ -18,3 +18,7 @@ docker-coompose up -d
 ```
 ./build_apps.sh
 ```
+
+```
+wrk -t2 -c100 -d30s -R2000 --latency -s ./wrk_scripts/get_user_by_pk.lua http://127.0.0.1:8000/
+```

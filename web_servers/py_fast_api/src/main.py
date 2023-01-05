@@ -1,14 +1,13 @@
 import logging
 
-from fastapi import APIRouter, Depends, FastAPI, Response
+from fastapi import APIRouter, FastAPI, Request, Response
 from src.db import db_module
-from src.dependencies import get_db_session
 
 logger = logging.getLogger("fastapi")
 
 
-app = FastAPI(dependencies=[Depends(get_db_session)])
 app = FastAPI()
+
 router = APIRouter(
     prefix="/user",
     tags=["user"],
@@ -17,13 +16,26 @@ router = APIRouter(
 
 
 @app.get("/user/{user_id}/")
-async def get_user(user_id: int, db=Depends(get_db_session)):
-    user = await db_module.UserRepo.get_user_by_id(db, user_id)
-    if not user:
-        return Response(status_code=404, content='{"error": "user not found"}')
-    return Response(status_code=200, content=user.json())
+async def get_user(request: Request, user_id: int):
+    logger.info(f"getting user with id {user_id}")
+    user = await db_module.UserRepo.get_user_by_id(request.app.state.db, user_id)
+    if user:
+        return Response(status_code=200, content=user.json())
+    return Response(status_code=404, content='{"description": "user not found"}')
 
 
 @app.get("/ping")
 async def ping():
     return "pong"
+
+
+@app.on_event("startup")
+async def startup():
+    from src import settings
+
+    app.state.db = await db_module.create_session(settings.DATABASE_URI)
+
+
+@app.on_event("shutdown")
+async def shutdown():
+    await app.state.db.close()

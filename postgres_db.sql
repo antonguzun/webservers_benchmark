@@ -10,4 +10,10 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE UNIQUE INDEX users_pk ON users (user_id) WHERE (is_archived=false);
 
 INSERT INTO users (username, email, created_at, updated_at) 
-VALUES ('user1', 'user@gmail.com', NOW(), NOW());
+SELECT
+    'user' || i || '_' || substr(md5(random()::text), 0, 6),
+    substr(md5(random()::text), 0, 14) || '@gmail.com',
+    NOW(),
+    NOW()
+FROM
+    generate_series(1, 10000) AS s(i);
