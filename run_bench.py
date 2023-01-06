@@ -1,9 +1,8 @@
 import os
-import signal
 import subprocess
 import time
+from multiprocessing import Process
 from pathlib import Path
-from textwrap import dedent
 
 import tomllib
 
@@ -36,17 +35,13 @@ if __name__ == "__main__":
                     print(wrk_process.stdout)
                 finally:
                     print(f"terminate {web_server_process.pid}")
-                    a = subprocess.run(
-                        "ps a | grep './web_servers/py_fast_api/venv/bin/uvicorn'", shell=True, stdout=subprocess.PIPE
-                    )
-
-                    pids = [int(i.split()[0]) for i in dedent(a.stdout.decode()).splitlines()]
-                    for pid in pids:
+                    p = Process(web_server_process.pid)
+                    for child in p.children(recursive=True):
                         try:
-                            os.kill(pid, signal.SIGTERM)
+                            child.kill()
                         except Exception:
                             pass
-                    print(a)
+                    p.kill()
                     time.sleep(5)
         except FileNotFoundError:
             print(f"Skipping {web_server} as it doesn't have a config.toml file")
