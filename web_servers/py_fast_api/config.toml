@@ -1,0 +1,5 @@
+name = "fastapi"
+language = "python"
+AVAILABLE_DATABASES = ["mysql_alchemy", "postgres_alchemy", "postgres_raw"]
+BUILD_COMMAND = "python3.11 -m venv venv && source ./venv/bin/activate && pip install -r requirements.txt"
+RUN_COMMAND = "uvicorn main:app --workers 8 > /dev/null"
