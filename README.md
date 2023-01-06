@@ -10,15 +10,17 @@ each web server should contain:
 ```sh
 docker-coompose up -d
 ```
-## build apps
+
+
+
 ```
-./build_apps.sh
-```
-## run services
-```
-./build_apps.sh
+wrk -t2 -c100 -d30s --latency -s ./wrk_scripts/get_user_by_pk.lua http://127.0.0.1:8000/
 ```
 
 ```
-wrk -t2 -c100 -d30s -R2000 --latency -s ./wrk_scripts/get_user_by_pk.lua http://127.0.0.1:8000/
+wrk -t2 -c100 -d30s --latency -s ./wrk_scripts/update_user.lua http://127.0.0.1:8000/
+```
+
+```
+curl -XPATCH 'localhost:8000/user/5/' --header 'token: hardcoded_token' -d '{"username":"asdsfafaf", "email": "asdsagagwe324@gmail.com"}' --header 'Content-Type: application/json'
 ```

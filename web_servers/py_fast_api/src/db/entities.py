@@ -11,3 +11,9 @@ class User(BaseModel):
     created_at: datetime.datetime
     updated_at: datetime.datetime
     is_archived: bool
+
+
+class UpdateUser(BaseModel):
+    username: str
+    email: str | None
+

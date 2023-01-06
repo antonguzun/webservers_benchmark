@@ -1,2 +1,2 @@
 from .utils import create_session
-from .user_repo import UserRepo
+from .user_model import UserAccessModel
