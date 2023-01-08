@@ -63,7 +63,7 @@ Python3.11 for python webservers
 - install python3.11
 - install wrk
 - install docker-compose
-- mariadb driver for mysql testcases
+- mariadb driver for mysql testcases (mariadb-devel)
 - run deps
 ```
 docker-compose up -d

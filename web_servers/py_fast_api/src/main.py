@@ -22,7 +22,7 @@ async def get_user(request: Request, user_id: int):
 
 
 @app.patch("/user/{user_id}/")
-async def get_user(request: Request, user_id: int, data: entities.UpdateUser):
+async def update_user(request: Request, user_id: int, data: entities.UpdateUser):
     if request.headers.get("token") != "hardcoded_token":
         return Response(status_code=403, content='{description: "unauthorized"}')
     logger.info(f"try to update with id {user_id}")

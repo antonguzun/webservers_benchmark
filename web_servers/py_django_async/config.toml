@@ -1,0 +1,16 @@
+name = "django_asgi"
+language = "python"
+
+[run_options]
+[run_options.postgres_orm]
+BUILD_COMMAND = "python3.11 -m venv venv && source ./venv/bin/activate && pip install -r requirements.txt"
+RUN_COMMAND = "PYTHONPATH=./web_servers/py_django_async DATABASE=postgres_orm ./web_servers/py_django_async/venv/bin/gunicorn bench.asgi --bind localhost:8000 --workers=8 --worker-class uvicorn.workers.UvicornWorker  > /dev/null"
+database = "postgres"
+orm = true
+
+
+# [run_options.mysql_orm]
+# BUILD_COMMAND = "python3.11 -m venv venv && source ./venv/bin/activate && pip install -r requirements.txt"
+# RUN_COMMAND = "PYTHONPATH=./web_servers/py_django_async DATABASE=mysql_orm ./web_servers/py_django_async/venv/bin/gunicorn bench.asgi --bind localhost:8000 --workers=8 --worker-class uvicorn.workers.UvicornWorker  > /dev/null"
+# database = "mysql"
+# orm = true
