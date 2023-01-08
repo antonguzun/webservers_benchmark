@@ -1,0 +1,40 @@
+
+TESTS = [
+    "get user", "update user", "plain",
+    "to json",
+]
+import pandas as pd
+from markdownTable import markdownTable
+
+if __name__ == "__main__":
+    import json
+    with open("./reports/2023-01-08.json", "r") as f:
+        data = json.loads(f.read())["results"]
+    df = pd.DataFrame.from_dict(
+            {i: r for (i, r) in enumerate(data)},
+        orient="index",
+        columns=[
+            "test_name",
+            "webserver_name",
+            "database",
+            "orm",
+            "requests_per_second",
+            "latency_p50",
+            "latency_p75",
+            "latency_p90",
+            "latency_p99",
+        ],
+    )
+    df.loc[df["test_name"]=="to json", 'orm'] = None
+    df.loc[df["test_name"]=="to json", 'database'] = None
+    df.loc[df["test_name"]=="plain", 'orm'] = None
+    df.loc[df["test_name"]=="plain", 'database'] = None
+
+    df.drop_duplicates(subset=['test_name', "webserver_name", "database", "orm"])
+
+    for test in TESTS:
+        get_user = df[df["test_name"]==test] 
+        get_user.sort_values(by=['webserver_name', 'database', 'orm'])
+        df.drop_duplicates(subset=['test_name', "webserver_name"])
+        table = markdownTable(get_user.to_dict(orient='records')).setParams(row_sep = 'markdown').getMarkdown()
+        print(table)

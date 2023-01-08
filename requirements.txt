@@ -1,0 +1,4 @@
+ py-markdown-table==0.3.3
+ pydantic==1.10.4
+ psutil==5.9.4
+ pandas==1.5.2
