@@ -1,9 +1,15 @@
 # webservers_benchmark
 
 
-## Results
+## Resources:
 
-### single query, select by pk
+AMD Ryzen 7 PRO 5750G with Radeon Graphics
+
+Fedora Linux 35
+
+Python3.11 for python webservers
+
+## single query, select by pk
 
 |test_name|webserver_name|database| orm |requests_per_second|latency_p50|latency_p75|latency_p90|latency_p99|
 |---------|--------------|--------|-----|-------------------|-----------|-----------|-----------|-----------|
@@ -20,7 +26,7 @@
 | get user|    aiohttp   |  mysql |False|      12565.67     |   8.56ms  |  10.59ms  |  14.45ms  |  21.41ms  |
 | get user|    aiohttp   |  mysql | True|      4186.12      |  19.40ms  |  39.51ms  |  48.70ms  |  76.78ms  |
 
-### update query by pk with returning
+## update query by pk with returning
 
 | test_name |webserver_name|database| orm |requests_per_second|latency_p50|latency_p75|latency_p90|latency_p99|
 |-----------|--------------|--------|-----|-------------------|-----------|-----------|-----------|-----------|
@@ -37,6 +43,7 @@
 |update user|    aiohttp   |  mysql |False|      6113.24      |  14.74ms  |  20.93ms  |  29.36ms  |  55.67ms  |
 |update user|    aiohttp   |  mysql | True|      2603.55      |  32.99ms  |  52.46ms  |  82.21ms  |  184.90ms |
 
+## plain text with reading header and query params
 
 |test_name|webserver_name|database| orm|requests_per_second|latency_p50|latency_p75|latency_p90|latency_p99|
 |---------|--------------|--------|----|-------------------|-----------|-----------|-----------|-----------|
@@ -44,7 +51,7 @@
 |  plain  |    fastapi   |  None  |None|      12987.79     |   5.82ms  |  12.47ms  |  19.50ms  |  34.74ms  |
 |  plain  |    aiohttp   |  None  |None|      35752.39     |   2.84ms  |   4.36ms  |   6.79ms  |  10.80ms  |
 
-### json serialization
+## json serialization with reading header and query params
 
 |test_name|webserver_name|database|orm|requests_per_second|latency_p50|latency_p75|latency_p90|latency_p99|
 |---------|--------------|--------|---|-------------------|-----------|-----------|-----------|-----------|
