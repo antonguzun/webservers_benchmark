@@ -25,6 +25,7 @@ Python3.11 for python webservers
 | get user|    aiohttp   |postgres| True|      3615.86      |  21.15ms  |  47.74ms  |  84.12ms  |  265.16ms |
 | get user|    aiohttp   |  mysql |False|      12565.67     |   8.56ms  |  10.59ms  |  14.45ms  |  21.41ms  |
 | get user|    aiohttp   |  mysql | True|      4186.12      |  19.40ms  |  39.51ms  |  48.70ms  |  76.78ms  |
+| get user| django_async |  postgres  |True|      764.0     |   124.95ms  |   154.68ms  |   188.56ms  |  257.97ms  |
 
 ## update query by pk with returning
 
@@ -42,6 +43,7 @@ Python3.11 for python webservers
 |update user|    aiohttp   |postgres| True|      1992.86      |  45.99ms  |  76.78ms  |  121.28ms |  265.49ms |
 |update user|    aiohttp   |  mysql |False|      6113.24      |  14.74ms  |  20.93ms  |  29.36ms  |  55.67ms  |
 |update user|    aiohttp   |  mysql | True|      2603.55      |  32.99ms  |  52.46ms  |  82.21ms  |  184.90ms |
+| update user| django_async |  postgres  |True|      656.82     |   143.49ms  |   180.75ms  |   246.57ms  |  356.93ms  |
 
 ## plain text with reading header and query params
 
@@ -50,6 +52,7 @@ Python3.11 for python webservers
 |  plain  |     sanic    |  None  |None|      53463.57     |   1.46ms  |   2.50ms  |   3.97ms  |   5.39ms  |
 |  plain  |    fastapi   |  None  |None|      12987.79     |   5.82ms  |  12.47ms  |  19.50ms  |  34.74ms  |
 |  plain  |    aiohttp   |  None  |None|      35752.39     |   2.84ms  |   4.36ms  |   6.79ms  |  10.80ms  |
+|  plain  | django_async |  None  |None|      1597.01     |   63.74ms  |   83.60ms  |   100.00ms  |  137.91ms  |
 
 ## json serialization with reading header and query params
 
@@ -58,6 +61,8 @@ Python3.11 for python webservers
 | to json |     sanic    |  None  |nan|      53544.9      |   1.78ms  |   2.66ms  |   3.41ms  |   5.37ms  |
 | to json |    fastapi   |  None  |nan|      12173.04     |   7.51ms  |  10.66ms  |  15.79ms  |  29.58ms  |
 | to json |    aiohttp   |  None  |nan|      35122.02     |   2.71ms  |   4.10ms  |   5.06ms  |   7.54ms  |
+| to json |    aiohttp   |  None  |nan|      35122.02     |   2.71ms  |   4.10ms  |   5.06ms  |   7.54ms  |
+|  to json  | django_async |  None  |nan|      1870.48     |   48.58ms  |   72.71ms  |   89.22ms  |  129.91ms  |
 
 ## run bench
 - install python3.11
