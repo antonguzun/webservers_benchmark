@@ -54,7 +54,7 @@ async def ping():
 @app.on_event("startup")
 async def startup():
     from src import settings
-
+    
     app.state.db = await db_module.create_session(settings.DATABASE_URI)
 
 

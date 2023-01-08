@@ -10,7 +10,7 @@ import tomllib
 
 web_servers_path = Path("web_servers")
 
-WRK_COMMAND = "wrk -t2 -c100 -d3s --latency -s ./wrk_scripts/{script_name} http://127.0.0.1:8000/"
+WRK_COMMAND = "wrk -t2 -c100 -d30s --latency -s ./wrk_scripts/{script_name} http://127.0.0.1:8000/"
 GET_USER_BENCH = dict(name="get user", wrk_command=WRK_COMMAND.format(script_name="get_user_by_pk.lua"))
 UPDATE_USER_BENCH = dict(name="update user", wrk_command=WRK_COMMAND.format(script_name="update_user.lua"))
 PLAIN_TEXT_BENCH = dict(name="plain", wrk_command=WRK_COMMAND.format(script_name="plain.lua"))
@@ -56,7 +56,7 @@ class BenchSummary(pydantic.BaseModel):
 def clean_db():
     print("Clean DB")
     os.system("psql postgresql://postgres:pass@localhost:15432/webservers_bench < postgres_db.sql")
-    # os.system("docker-compose -f docker-compose.yml up -d")
+    os.system("mysql --user=user --password=pass --port=13306 --protocol=tcp webservers_bench < mysql_db.sql")
     time.sleep(1)
 
 

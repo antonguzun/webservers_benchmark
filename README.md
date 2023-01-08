@@ -2,6 +2,7 @@
 - install python3.11
 - install wrk
 - install docker-compose
+- mariadb driver for mysql testcases
 - run deps
 ```
 docker-compose up -d

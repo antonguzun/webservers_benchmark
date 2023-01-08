@@ -5,3 +5,4 @@ uvicorn==0.20.0
 sqlalchemy[asyncio]==2.0.0b3
 asyncpg==0.27.0
 psycopg2-binary==2.9.5
+aiomysql==0.1.1
