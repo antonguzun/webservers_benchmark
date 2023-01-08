@@ -19,7 +19,7 @@ WRK_TESTS = [GET_USER_BENCH, UPDATE_USER_BENCH, TO_JSON_BENCH, PLAIN_TEXT_BENCH]
 
 
 class BenchResult(pydantic.BaseModel):
-    test_name = str
+    test_name: str
     webserver_name: str
     database: str
     orm: bool
@@ -31,7 +31,9 @@ class BenchResult(pydantic.BaseModel):
     latency_p99: str
 
     @classmethod
-    def create_from_wrk_output(cls, webserver_name: str, test_name: str, database: str, orm: bool, output: str) -> "BenchResult":
+    def create_from_wrk_output(
+        cls, webserver_name: str, test_name: str, database: str, orm: bool, output: str
+    ) -> "BenchResult":
         data = output.splitlines()
         return cls(
             test_name=test_name,
@@ -51,6 +53,13 @@ class BenchSummary(pydantic.BaseModel):
     results: list[BenchResult]
 
 
+def clean_db():
+    print("Clean DB")
+    os.system("psql postgresql://postgres:pass@localhost:15432/webservers_bench < postgres_db.sql")
+    # os.system("docker-compose -f docker-compose.yml up -d")
+    time.sleep(1)
+
+
 if __name__ == "__main__":
     print("Running benchmarks")
     summary = BenchSummary(created_at=datetime.date.today(), results=[])
@@ -65,6 +74,7 @@ if __name__ == "__main__":
                 print(f"Build {config['name']}")
                 os.system(f"cd {web_server} && {run_option['BUILD_COMMAND']}")
                 print(f"Run webserver {config['name']} in subprocess")
+                clean_db()
                 web_server_process = subprocess.Popen(
                     [run_option["RUN_COMMAND"]],
                     shell=True,
@@ -73,14 +83,23 @@ if __name__ == "__main__":
                 try:
                     time.sleep(5)
                     for wrk_test in WRK_TESTS:
-                        print(f"Running {config['name']} test {wrk_test['name']}")
-                        wrk_process = subprocess.run(
-                            wrk_test["wrk_command"],
-                            shell=True,
-                            stdout=subprocess.PIPE,
-                        )
-                        result = BenchResult.create_from_wrk_output(config["name"], wrk_test["name"], run_option["database"], run_option["orm"], wrk_process.stdout)
-                        summary.results.append(result)
+                        try:
+                            print(f"Running {config['name']} test {wrk_test['name']}")
+                            wrk_process = subprocess.run(
+                                wrk_test["wrk_command"],
+                                shell=True,
+                                stdout=subprocess.PIPE,
+                            )
+                            result = BenchResult.create_from_wrk_output(
+                                webserver_name=config["name"],
+                                test_name=wrk_test["name"],
+                                database=run_option["database"],
+                                orm=run_option["orm"],
+                                output=wrk_process.stdout,
+                            )
+                            summary.results.append(result)
+                        except Exception as e:
+                            print(f"Failed to run {wrk_test['name']} test {e}")
                 finally:
                     print(f"terminate webserver {web_server_process.pid}")
                     p = psutil.Process(web_server_process.pid)
@@ -96,4 +115,5 @@ if __name__ == "__main__":
             continue
 
     print("Done")
-    print(summary.json())
+    with open(f"reports/{summary.created_at}.json", "w") as f:
+        f.write(summary.json())

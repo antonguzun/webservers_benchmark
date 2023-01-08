@@ -9,3 +9,7 @@ async def create_session(uri: str) -> Pool:
     except Exception as e:
         print(e)
         raise Exception("error during asyncpg pool creation") from e
+
+
+async def close_session(session: Pool):
+    await session.close()

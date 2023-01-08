@@ -60,4 +60,5 @@ async def startup():
 
 @app.on_event("shutdown")
 async def shutdown():
-    await app.state.db.close()
+    await db_module.close_session(app.state.db)
+
