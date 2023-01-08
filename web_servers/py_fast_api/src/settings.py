@@ -15,13 +15,13 @@ class Databases(str, Enum):
     POSTGRES_RAW = "postgres_raw"
 
 
-CHOSEN_DB = Databases.POSTGRES_RAW
+CHOSEN_DB = os.environ["DATABASE"]
 
 match CHOSEN_DB:
     case Databases.MYSQL_ALCHEMY:
         DATABASE_URI = MYSQL_URI
     case Databases.POSTGRES_ALCHEMY:
-        DATABASE_URI = POSTGRES_URI
+        DATABASE_URI = "postgresql+asyncpg://postgres:pass@localhost:15432/webservers_bench"
     case Databases.POSTGRES_RAW:
         DATABASE_URI = "postgresql://postgres:pass@localhost:15432/webservers_bench"
     case _:
