@@ -4,8 +4,8 @@
 2. [Methodology](#Methodology)
 3. [Tests](#Tests)
 4. [Results](#Results)
-5. [Run benchmark](#Run benchmark)
-6. [Debug commands](#Debug commands)
+5. [Run](#Run)
+6. [Debug](#Debug)
 
 # Resources
 
@@ -110,7 +110,7 @@ Restore the database before each running webserver
 | to json |    fastapi   |  None  |None|      20996.95     |   4.56ms  |   6.08ms  |   9.03ms  |  12.88ms  |
 | to json |  django_asgi |  None  |None|      2192.78      |  46.00ms  |  63.93ms  |  93.15ms  |  137.00ms |
 
-# Run benchmark
+# Run
 
 - install python3.11
 - install wrk
