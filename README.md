@@ -27,7 +27,7 @@ Restore the database before each running webserver
 
 # Tests
 
-`get user` is test which produce:
+`get user` is a test which produces:
 
 - deserialization path and headers
 - comparison token header
@@ -35,7 +35,7 @@ Restore the database before each running webserver
 - deserialization row into object/structure
 - serialization into json
 
-`update user` is test which produce:
+`update user` is a test which produces:
 
 - deserialization path, headers and body
 - comparison token header
@@ -44,19 +44,20 @@ Restore the database before each running webserver
 - deserialization row into object/structure
 - serialization into json
 
-`plain` is test which produce:
+`plain` is a test which produces:
 
 - deserialization path, headers
 - comparison token header
 - serialization params into string
 
-`to json` is test which produce:
+`to json` is a test which produces:
 
 - deserialization path, headers
 - comparison token header
 - serialization params into json
 
 # Results
+
 ## single query, select by pk
 
 |test_name|webserver_name|database| orm |req/sec|latency_p50|latency_p75|latency_p90|latency_p99|
