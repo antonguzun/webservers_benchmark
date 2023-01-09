@@ -137,7 +137,7 @@ python run_bench.py
 python create_markdown_tables.py
 ```
 
-# Debug commands
+# Debug
 
 ```
 wrk -t2 -c100 -d30s --latency -s ./wrk_scripts/get_user_by_pk.lua http://127.0.0.1:8000/
