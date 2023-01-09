@@ -16,13 +16,14 @@ UPDATE_USER_BENCH = dict(name="update user", wrk_command=WRK_COMMAND.format(scri
 PLAIN_TEXT_BENCH = dict(name="plain", wrk_command=WRK_COMMAND.format(script_name="plain.lua"))
 TO_JSON_BENCH = dict(name="to json", wrk_command=WRK_COMMAND.format(script_name="to_json.lua"))
 WRK_TESTS = [GET_USER_BENCH, UPDATE_USER_BENCH, TO_JSON_BENCH, PLAIN_TEXT_BENCH]
-
+STATELESS_TEST_NAMES = [TO_JSON_BENCH["name"], PLAIN_TEXT_BENCH["name"]]
 
 class BenchResult(pydantic.BaseModel):
     test_name: str
     webserver_name: str
-    database: str
-    orm: bool
+    language: str
+    database: str | None
+    orm: bool | None
 
     requests_per_second: float
     latency_p50: str
@@ -32,12 +33,13 @@ class BenchResult(pydantic.BaseModel):
 
     @classmethod
     def create_from_wrk_output(
-        cls, webserver_name: str, test_name: str, database: str, orm: bool, output: str
+        cls, webserver_name: str, test_name: str, language:str, database: str, orm: bool, output: str
     ) -> "BenchResult":
         data = output.splitlines()
         return cls(
             test_name=test_name,
             webserver_name=webserver_name,
+            language=language,
             database=database,
             orm=orm,
             requests_per_second=float(data[11].split()[1]),
@@ -62,13 +64,15 @@ def clean_db():
 
 if __name__ == "__main__":
     print("Running benchmarks")
+    finished = set()
     summary = BenchSummary(created_at=datetime.date.today(), results=[])
 
     for web_server in web_servers_path.iterdir():
         try:
             with open(f"{web_server}/config.toml", "rb") as f:
                 config = tomllib.load(f)
-
+            if not "aiohttp" in config["name"]:
+                continue
             for run_setup_name, run_option in config["run_options"].items():
                 print(f"Running benchmarks for {config['name']} {run_setup_name}")
                 print(f"Build {config['name']}")
@@ -83,6 +87,9 @@ if __name__ == "__main__":
                 try:
                     time.sleep(5)
                     for wrk_test in WRK_TESTS:
+                        if wrk_test['name'] in STATELESS_TEST_NAMES \
+                            and f"{config['name']}_{wrk_test['name']}" in finished:
+                            continue
                         try:
                             print(f"Running {config['name']} test {wrk_test['name']}")
                             wrk_process = subprocess.run(
@@ -92,12 +99,14 @@ if __name__ == "__main__":
                             )
                             result = BenchResult.create_from_wrk_output(
                                 webserver_name=config["name"],
+                                language=config["language"],
                                 test_name=wrk_test["name"],
-                                database=run_option["database"],
-                                orm=run_option["orm"],
+                                database=run_option["database"] if wrk_test['name'] not in STATELESS_TEST_NAMES else None,
+                                orm=run_option["orm"] if wrk_test['name'] not in STATELESS_TEST_NAMES else None,
                                 output=wrk_process.stdout,
                             )
                             summary.results.append(result)
+                            finished.add(f"{config['name']}_{wrk_test['name']}")
                         except Exception as e:
                             print(f"Failed to run {wrk_test['name']} test {e}")
                 finally:
