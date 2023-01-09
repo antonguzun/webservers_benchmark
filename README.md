@@ -1,7 +1,13 @@
 # webservers_benchmark
 
+1. [Resources](#Resources)
+2. [Methodology](#Methodology)
+3. [Tests](#Tests)
+4. [Results](#Results)
+5. [Run benchmark](#Run benchmark)
+6. [Debug commands](#Debug commands)
 
-## Resources:
+# Resources
 
 AMD Ryzen 7 PRO 5750G with Radeon Graphics
 
@@ -9,6 +15,48 @@ Fedora Linux 35
 
 Python3.11 for python webservers
 
+# Methodology
+
+Each webserver run in 8 threads or processes
+
+Produce requests for random object with random params
+
+The database contains 10000 rows of objects with random values
+
+Restore the database before each running webserver
+
+# Tests
+
+`get user` is test which produce:
+
+- deserialization path and headers
+- comparison token header
+- single select query by indexed pk to db
+- deserialization row into object/structure
+- serialization into json
+
+`update user` is test which produce:
+
+- deserialization path, headers and body
+- comparison token header
+- single update query by indexed pk to db
+- query new state of object
+- deserialization row into object/structure
+- serialization into json
+
+`plain` is test which produce:
+
+- deserialization path, headers
+- comparison token header
+- serialization params into string
+
+`to json` is test which produce:
+
+- deserialization path, headers
+- comparison token header
+- serialization params into json
+
+# Results
 ## single query, select by pk
 
 |test_name|webserver_name|database| orm |req/sec|latency_p50|latency_p75|latency_p90|latency_p99|
@@ -62,7 +110,8 @@ Python3.11 for python webservers
 | to json |    fastapi   |  None  |None|      20996.95     |   4.56ms  |   6.08ms  |   9.03ms  |  12.88ms  |
 | to json |  django_asgi |  None  |None|      2192.78      |  46.00ms  |  63.93ms  |  93.15ms  |  137.00ms |
 
-## run bench
+# Run benchmark
+
 - install python3.11
 - install wrk
 - install docker-compose
@@ -88,7 +137,8 @@ python run_bench.py
 python create_markdown_tables.py
 ```
 
-## debug commands
+# Debug commands
+
 ```
 wrk -t2 -c100 -d30s --latency -s ./wrk_scripts/get_user_by_pk.lua http://127.0.0.1:8000/
 ```
