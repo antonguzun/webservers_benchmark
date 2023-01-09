@@ -11,58 +11,56 @@ Python3.11 for python webservers
 
 ## single query, select by pk
 
-|test_name|webserver_name|database| orm |requests_per_second|latency_p50|latency_p75|latency_p90|latency_p99|
+|test_name|webserver_name|database| orm |req/sec|latency_p50|latency_p75|latency_p90|latency_p99|
 |---------|--------------|--------|-----|-------------------|-----------|-----------|-----------|-----------|
-| get user|     sanic    |postgres|False|      16392.63     |   5.68ms  |   7.40ms  |   9.73ms  |  17.00ms  |
-| get user|     sanic    |postgres| True|       4044.1      |  20.17ms  |  42.50ms  |  77.06ms  |  222.32ms |
-| get user|     sanic    |  mysql |False|      15348.8      |   5.71ms  |   9.01ms  |  10.94ms  |  15.32ms  |
-| get user|     sanic    |  mysql | True|      4180.49      |  21.19ms  |  29.87ms  |  42.37ms  |  61.79ms  |
-| get user|    fastapi   |postgres|False|      6960.06      |  15.26ms  |  18.99ms  |  24.77ms  |  52.91ms  |
-| get user|    fastapi   |postgres| True|      2448.88      |  36.92ms  |  70.81ms  |  114.84ms |  304.38ms |
-| get user|    fastapi   |  mysql |False|      5781.06      |  15.10ms  |  25.03ms  |  34.60ms  |  54.72ms  |
-| get user|    fastapi   |  mysql | True|      3084.09      |  29.33ms  |  43.37ms  |  71.12ms  |  105.94ms |
-| get user|    aiohttp   |postgres|False|      12619.04     |   7.12ms  |  11.93ms  |  18.33ms  |  38.30ms  |
-| get user|    aiohttp   |postgres| True|      3615.86      |  21.15ms  |  47.74ms  |  84.12ms  |  265.16ms |
-| get user|    aiohttp   |  mysql |False|      12565.67     |   8.56ms  |  10.59ms  |  14.45ms  |  21.41ms  |
-| get user|    aiohttp   |  mysql | True|      4186.12      |  19.40ms  |  39.51ms  |  48.70ms  |  76.78ms  |
-| get user| django_async |  postgres  |True|      764.0     |   124.95ms  |   154.68ms  |   188.56ms  |  257.97ms  |
+| get user|     sanic    |postgres|False|      19718.93     |   4.55ms  |   5.78ms  |  10.75ms  |  17.66ms  |
+| get user|     sanic    |  mysql |False|      17552.93     |   5.76ms  |   7.38ms  |   8.06ms  |   9.62ms  |
+| get user|    aiohttp   |postgres|False|      16675.81     |   5.11ms  |   7.66ms  |  14.33ms  |  34.39ms  |
+| get user|    aiohttp   |  mysql |False|      15238.32     |   5.76ms  |   8.63ms  |  13.52ms  |  14.72ms  |
+| get user|    fastapi   |  mysql |False|      10628.6      |   9.17ms  |  12.57ms  |  17.26ms  |  19.68ms  |
+| get user|    fastapi   |postgres|False|      10162.85     |   8.77ms  |  14.71ms  |  27.65ms  |  61.53ms  |
+| get user|    aiohttp   |postgres| True|      5252.83      |  12.65ms  |  31.46ms  |  48.86ms  |  151.48ms |
+| get user|     sanic    |  mysql | True|      4962.36      |  17.57ms  |  27.00ms  |  35.23ms  |  51.25ms  |
+| get user|    aiohttp   |  mysql | True|      4653.78      |  21.64ms  |  35.78ms  |  40.35ms  |  52.91ms  |
+| get user|     sanic    |postgres| True|      3956.58      |  19.77ms  |  42.88ms  |  76.93ms  |  190.46ms |
+| get user|    fastapi   |  mysql | True|      3910.85      |  20.22ms  |  42.55ms  |  66.47ms  |  118.68ms |
+| get user|    fastapi   |postgres| True|      3896.73      |  21.76ms  |  41.49ms  |  68.02ms  |  178.77ms |
+| get user|  django_asgi |postgres| True|       875.28      |  103.43ms |  146.67ms |  184.53ms |  262.59ms |
 
 ## update query by pk with returning
 
-| test_name |webserver_name|database| orm |requests_per_second|latency_p50|latency_p75|latency_p90|latency_p99|
+| test_name |webserver_name|database| orm |req/sec|latency_p50|latency_p75|latency_p90|latency_p99|
 |-----------|--------------|--------|-----|-------------------|-----------|-----------|-----------|-----------|
-|update user|     sanic    |postgres|False|      10553.61     |   8.47ms  |  11.79ms  |  15.70ms  |  25.56ms  |
-|update user|     sanic    |postgres| True|      2581.09      |  42.82ms  |  53.35ms  |  66.71ms  |  146.87ms |
-|update user|     sanic    |  mysql |False|      7993.45      |  11.27ms  |  15.85ms  |  22.04ms  |  40.90ms  |
-|update user|     sanic    |  mysql | True|      2640.34      |  27.28ms  |  61.55ms  |  87.29ms  |  144.20ms |
-|update user|    fastapi   |postgres|False|      5309.65      |  17.53ms  |  24.80ms  |  34.71ms  |  65.73ms  |
-|update user|    fastapi   |postgres| True|      1665.46      |  57.55ms  |  78.38ms  |  119.74ms |  287.22ms |
-|update user|    fastapi   |  mysql |False|      3261.62      |  27.12ms  |  44.73ms  |  76.51ms  |  155.11ms |
-|update user|    fastapi   |  mysql | True|      1926.39      |  43.56ms  |  68.68ms  |  86.18ms  |  131.81ms |
-|update user|    aiohttp   |postgres|False|      9129.86      |   9.70ms  |  14.88ms  |  22.64ms  |  41.67ms  |
-|update user|    aiohttp   |postgres| True|      1992.86      |  45.99ms  |  76.78ms  |  121.28ms |  265.49ms |
-|update user|    aiohttp   |  mysql |False|      6113.24      |  14.74ms  |  20.93ms  |  29.36ms  |  55.67ms  |
-|update user|    aiohttp   |  mysql | True|      2603.55      |  32.99ms  |  52.46ms  |  82.21ms  |  184.90ms |
-| update user| django_async |  postgres  |True|      656.82     |   143.49ms  |   180.75ms  |   246.57ms  |  356.93ms  |
+|update user|    aiohttp   |postgres|False|      12691.72     |   7.56ms  |   9.24ms  |  10.65ms  |  13.89ms  |
+|update user|     sanic    |postgres|False|      11558.09     |   7.91ms  |  10.16ms  |  21.08ms  |  42.14ms  |
+|update user|     sanic    |  mysql |False|      7844.53      |  11.74ms  |  16.54ms  |  22.90ms  |  40.31ms  |
+|update user|    fastapi   |postgres|False|      7108.98      |  12.76ms  |  19.10ms  |  26.61ms  |  50.64ms  |
+|update user|    aiohttp   |  mysql |False|      5403.76      |  16.51ms  |  24.82ms  |  35.83ms  |  87.23ms  |
+|update user|    fastapi   |  mysql |False|      5053.28      |  17.62ms  |  25.54ms  |  36.60ms  |  69.04ms  |
+|update user|     sanic    |postgres| True|      3246.06      |  31.89ms  |  43.43ms  |  70.51ms  |  177.10ms |
+|update user|    aiohttp   |  mysql | True|      3079.27      |  32.92ms  |  43.83ms  |  50.90ms  |  71.36ms  |
+|update user|    aiohttp   |postgres| True|      3053.93      |  29.37ms  |  49.17ms  |  84.96ms  |  208.10ms |
+|update user|     sanic    |  mysql | True|      2625.22      |  38.50ms  |  45.98ms  |  53.13ms  |  502.15ms |
+|update user|    fastapi   |  mysql | True|      2497.89      |  27.22ms  |  61.75ms  |  93.15ms  |  177.00ms |
+|update user|    fastapi   |postgres| True|      2182.01      |  42.59ms  |  56.48ms  |  78.46ms  |  157.21ms |
 
 ## plain text with reading header and query params
 
-|test_name|webserver_name|database| orm|requests_per_second|latency_p50|latency_p75|latency_p90|latency_p99|
+|test_name|webserver_name|database| orm|req/sec|latency_p50|latency_p75|latency_p90|latency_p99|
 |---------|--------------|--------|----|-------------------|-----------|-----------|-----------|-----------|
-|  plain  |     sanic    |  None  |None|      53463.57     |   1.46ms  |   2.50ms  |   3.97ms  |   5.39ms  |
-|  plain  |    fastapi   |  None  |None|      12987.79     |   5.82ms  |  12.47ms  |  19.50ms  |  34.74ms  |
-|  plain  |    aiohttp   |  None  |None|      35752.39     |   2.84ms  |   4.36ms  |   6.79ms  |  10.80ms  |
-|  plain  | django_async |  None  |None|      1597.01     |   63.74ms  |   83.60ms  |   100.00ms  |  137.91ms  |
+|  plain  |     sanic    |  None  |None|      69700.5      |   1.18ms  |   2.18ms  |   2.53ms  |   4.49ms  |
+|  plain  |    aiohttp   |  None  |None|      41540.48     |   2.49ms  |   3.97ms  |   5.33ms  |   7.66ms  |
+|  plain  |    fastapi   |  None  |None|      18465.76     |   5.59ms  |   9.08ms  |  13.35ms  |  19.84ms  |
+|  plain  |  django_asgi |  None  |None|      2681.32      |  30.53ms  |  47.30ms  |  58.13ms  |  91.46ms  |
 
 ## json serialization with reading header and query params
 
-|test_name|webserver_name|database|orm|requests_per_second|latency_p50|latency_p75|latency_p90|latency_p99|
-|---------|--------------|--------|---|-------------------|-----------|-----------|-----------|-----------|
-| to json |     sanic    |  None  |nan|      53544.9      |   1.78ms  |   2.66ms  |   3.41ms  |   5.37ms  |
-| to json |    fastapi   |  None  |nan|      12173.04     |   7.51ms  |  10.66ms  |  15.79ms  |  29.58ms  |
-| to json |    aiohttp   |  None  |nan|      35122.02     |   2.71ms  |   4.10ms  |   5.06ms  |   7.54ms  |
-| to json |    aiohttp   |  None  |nan|      35122.02     |   2.71ms  |   4.10ms  |   5.06ms  |   7.54ms  |
-|  to json  | django_async |  None  |nan|      1870.48     |   48.58ms  |   72.71ms  |   89.22ms  |  129.91ms  |
+|test_name|webserver_name|database| orm|req/sec|latency_p50|latency_p75|latency_p90|latency_p99|
+|---------|--------------|--------|----|-------------------|-----------|-----------|-----------|-----------|
+| to json |     sanic    |  None  |None|      66559.11     |   1.17ms  |   2.10ms  |   2.43ms  |   3.93ms  |
+| to json |    aiohttp   |  None  |None|      45675.28     |   1.76ms  |   2.65ms  |   4.22ms  |   6.30ms  |
+| to json |    fastapi   |  None  |None|      20996.95     |   4.56ms  |   6.08ms  |   9.03ms  |  12.88ms  |
+| to json |  django_asgi |  None  |None|      2192.78      |  46.00ms  |  63.93ms  |  93.15ms  |  137.00ms |
 
 ## run bench
 - install python3.11
