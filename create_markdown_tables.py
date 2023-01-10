@@ -10,7 +10,7 @@ from markdownTable import markdownTable
 if __name__ == "__main__":
     import json
 
-    with open("./reports/2023-01-09.json", "r") as f:
+    with open("./reports/2023-01-10.json", "r") as f:
         data = json.loads(f.read())["results"]
     df = pd.DataFrame.from_dict(
         {i: r for (i, r) in enumerate(data)},
@@ -35,10 +35,13 @@ if __name__ == "__main__":
     df.drop_duplicates(subset=["test_name", "webserver_name", "database", "orm"])
 
     for test in TESTS:
-        get_user = df[df["test_name"] == test]
-        table = (
-            markdownTable(get_user.sort_values(by="requests_per_second", ascending=False).to_dict(orient="records"))
-            .setParams(row_sep="markdown")
-            .getMarkdown()
-        )
-        print(table)
+        try:
+            tdf = df[df["test_name"] == test]
+            table = (
+                markdownTable(tdf.sort_values(by="requests_per_second", ascending=False).to_dict(orient="records"))
+                .setParams(row_sep="markdown")
+                .getMarkdown()
+            )
+            print(table)
+        except Exception as e:
+            print(e)

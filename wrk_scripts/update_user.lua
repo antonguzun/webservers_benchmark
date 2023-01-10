@@ -8,6 +8,7 @@ end
 
 request = function()
     wrk.headers["Connection"] = "Keep-Alive"
+    wrk.headers["Content-Type"] = "application/json"
     wrk.headers["token"] = "hardcoded_token"
     local username = RandomVariable(24)
     local email = RandomVariable(24) .. "@gmail.com"

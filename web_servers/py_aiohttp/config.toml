@@ -1,4 +1,4 @@
-name = "aiohttp"
+name = "aiohttp[gunicorn]"
 language = "python"
 
 [run_options]
