@@ -4,13 +4,10 @@ use hyper::header::HeaderValue;
 use hyper::server::conn::http1;
 
 use hyper::service::Service;
-use hyper::{
-    body::Incoming as IncomingBody, Method, Request, Response, StatusCode,
-};
+use hyper::{body::Incoming as IncomingBody, Method, Request, Response, StatusCode};
 use serde::{Deserialize, Serialize};
 
 use tokio::net::TcpListener;
-
 
 extern crate serde_qs as qs;
 
@@ -19,9 +16,6 @@ use std::net::SocketAddr;
 use std::pin::Pin;
 
 use bench::common::{Config, Resources};
-
-
-
 
 type GenericError = Box<dyn std::error::Error + Send + Sync>;
 type Result<T> = std::result::Result<T, GenericError>;
