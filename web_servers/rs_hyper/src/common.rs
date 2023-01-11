@@ -54,7 +54,10 @@ pub struct Resources {
 impl Resources {
     pub async fn create_resources(config: &Config) -> Resources {
         let db_pool = create_pool(&config);
-        Resources { db_pool, config: config.clone() }
+        Resources {
+            db_pool,
+            config: config.clone(),
+        }
     }
 }
 
