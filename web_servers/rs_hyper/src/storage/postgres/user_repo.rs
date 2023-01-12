@@ -10,12 +10,12 @@ use deadpool_postgres::Pool;
 use tokio_postgres::types::ToSql;
 use tokio_postgres::Row;
 
-pub struct UserRepo {
-    db_pool: Pool,
+pub struct UserRepo<'a> {
+    db_pool: &'a Pool,
 }
 
-impl UserRepo {
-    pub fn new(db_pool: Pool) -> UserRepo {
+impl UserRepo<'_> {
+    pub fn new<'a>(db_pool: &'a Pool) -> UserRepo {
         UserRepo { db_pool }
     }
 }
@@ -35,14 +35,14 @@ impl SqlSerializer<User> for User {
     }
 }
 #[async_trait]
-impl FindUserById for UserRepo {
+impl FindUserById for UserRepo<'_> {
     async fn find_user_by_id(&self, user_id: i32) -> Result<User, AccessModelError> {
         get_item(&self.db_pool, GET_BY_ID_QUERY, &[&user_id]).await
     }
 }
 
 #[async_trait]
-impl UpdateUser for UserRepo {
+impl UpdateUser for UserRepo<'_> {
     async fn update_user_in_storage(&self, user: UserForUpdate) -> Result<User, AccessModelError> {
         let params: &[&(dyn ToSql + Sync)] = &[&user.user_id, &user.username, &user.email];
         update_item(&self.db_pool, UPDATE_USER_QUERY, params).await

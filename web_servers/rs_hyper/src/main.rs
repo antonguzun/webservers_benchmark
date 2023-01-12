@@ -16,12 +16,16 @@ use std::net::SocketAddr;
 use std::pin::Pin;
 
 use bench::common::{Config, Resources};
-use regex::Regex;
+use bench::storage::postgres::user_repo::UserRepo;
+use bench::usecases::users::errors::UserUCError;
+use bench::usecases::users::{get_user, user_updater};
+
 use lazy_static::lazy_static;
+use regex::Regex;
+
 lazy_static! {
     static ref USER_PATH_RE: Regex = Regex::new(r"hello (\w+)!").unwrap();
 }
-
 
 type GenericError = Box<dyn std::error::Error + Send + Sync>;
 type Result<T> = std::result::Result<T, GenericError>;
@@ -38,6 +42,56 @@ async fn ping_handler() -> Result<Response<BoxBody>> {
     Ok(response)
 }
 
+pub async fn get_user_by_id(user_id: i32, resources: &Resources) -> Result<Response<BoxBody>> {
+    let user_repo = UserRepo::new(&resources.db_pool);
+    let response = match get_user::get_user_by_id(&user_repo, user_id).await {
+        Ok(user) => Response::builder()
+            .status(StatusCode::OK)
+            .body(full(serde_json::to_string(&user)?))?,
+        Err(UserUCError::NotFoundError) => Response::builder()
+            .status(StatusCode::NOT_FOUND)
+            .body(full(NOTFOUND))
+            .unwrap(),
+        Err(_) => {
+            // error!("usecase error");
+            Response::builder()
+                .status(StatusCode::INTERNAL_SERVER_ERROR)
+                .body(full(INTERNAL_SERVER_ERROR))
+                .unwrap()
+        }
+    };
+    Ok(response)
+}
+
+// #[derive(Deserialize, Serialize)]
+// pub struct UserUpdateScheme {
+//     pub email: String,
+//     pub username: String,
+// }
+
+// pub async fn update_user_handler(
+//     user_id: i32,
+//     request: Request<IncomingBody>,
+//     resources: Data<Resources>,
+// ) -> impl Responder {
+//     if request.headers().get("token") != Some(&HeaderValue::from_str("hardcoded_token").unwrap()) {
+//         return Ok(Response::builder()
+//             .status(StatusCode::FORBIDDEN)
+//             .body(full(FORBIDDEN))
+//             .unwrap());
+//     }
+
+//     let username = user_data.username.to_string();
+//     let email = user_data.email.to_string();
+//     let user_access_model = UserRepo::new(resources.db_pool.clone());
+//     match user_updater::update_user(&user_access_model, username, email, user_id).await {
+//         Ok(user) => HttpResponse::Ok().json(user),
+//         Err(_) => {
+//             error!("usecase error");
+//             HttpResponse::InternalServerError().body("internal error")
+//         }
+//     }
+// }
 
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub struct ParamsQuery {
@@ -133,27 +187,42 @@ impl Service<Request<IncomingBody>> for Srv {
                 (&Method::GET, "/ping/") => ping_handler().await,
                 (&Method::GET, "/plain/") => plain_handler(req).await,
                 (&Method::GET, "/to_json/") => to_json_handler(req).await,
-                // (&Method::GET, "/user/") => client_request_response().await,
-                // (&Method::PATCH, "/user/") => client_request_response().await,
                 _ => {
-                    let re = Regex::new(r"^/user/(\d+)/$").expect("regexp error during routing");
-                    match re.find(req.uri().path()).map(|x| x.as_str()).unwrap_or(None);
-                    let user_id: i32 = re
-                        .captures(raw_item)
-                        .ok_or("No item class matches in string".to_string())?
-                        .get(1)
-                        .ok_or("No item class in string found".to_string())?
-                        .as_str()
-                        .trim();
-                    
-                    match req.uri().path() {
-                        _ => println!("{} {}", req.method(), req.uri().path()),
+                    let user_id: Option<i32> = match USER_PATH_RE.captures(req.uri().path()) {
+                        Some(caps) => match caps.get(0) {
+                            Some(user_id_raw) => Some(user_id_raw.as_str().parse::<i32>().unwrap()),
+                            None => None,
+                        },
+                        None => None,
+                    };
+                    match user_id {
+                        Some(user_id) => {
+                            match req.method() {
+                                // &Method::GET => get_user_by_id(user_id, &self.resources).await,
+                                // &Method::PATCH => {
+                                //     // Return 200 OK response.
+                                //     let response = Response::builder()
+                                //         .status(StatusCode::OK)
+                                //         .body(full(format!("user_id={}", user_id)))?;
+                                //     return Ok(response);
+                                // }
+                                _ => {
+                                    // Return 404 not found response.
+                                    Ok(Response::builder()
+                                        .status(StatusCode::NOT_FOUND)
+                                        .body(full(NOTFOUND))
+                                        .unwrap())
+                                }
+                            }
+                        }
+                        None => {
+                            // Return 404 not found response.
+                            Ok(Response::builder()
+                                .status(StatusCode::NOT_FOUND)
+                                .body(full(NOTFOUND))
+                                .unwrap())
+                        }
                     }
-                    // Return 404 not found response.
-                    Ok(Response::builder()
-                        .status(StatusCode::NOT_FOUND)
-                        .body(full(NOTFOUND))
-                        .unwrap())
                 }
             }
         })

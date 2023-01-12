@@ -2,7 +2,7 @@ name = "hyper"
 language = "rust"
 
 [run_options]
-[run_options.postgres_raw]
+[run_options.async]
 BUILD_COMMAND = "cargo build --release"
 RUN_COMMAND = "cargo run --manifest-path web_servers/rs_hyper/Cargo.toml --release > /dev/null"
 database = "postgres"
