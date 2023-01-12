@@ -16,6 +16,12 @@ use std::net::SocketAddr;
 use std::pin::Pin;
 
 use bench::common::{Config, Resources};
+use regex::Regex;
+use lazy_static::lazy_static;
+lazy_static! {
+    static ref USER_PATH_RE: Regex = Regex::new(r"hello (\w+)!").unwrap();
+}
+
 
 type GenericError = Box<dyn std::error::Error + Send + Sync>;
 type Result<T> = std::result::Result<T, GenericError>;
@@ -31,6 +37,7 @@ async fn ping_handler() -> Result<Response<BoxBody>> {
         .body(full("pong"))?;
     Ok(response)
 }
+
 
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub struct ParamsQuery {
@@ -129,6 +136,19 @@ impl Service<Request<IncomingBody>> for Srv {
                 // (&Method::GET, "/user/") => client_request_response().await,
                 // (&Method::PATCH, "/user/") => client_request_response().await,
                 _ => {
+                    let re = Regex::new(r"^/user/(\d+)/$").expect("regexp error during routing");
+                    match re.find(req.uri().path()).map(|x| x.as_str()).unwrap_or(None);
+                    let user_id: i32 = re
+                        .captures(raw_item)
+                        .ok_or("No item class matches in string".to_string())?
+                        .get(1)
+                        .ok_or("No item class in string found".to_string())?
+                        .as_str()
+                        .trim();
+                    
+                    match req.uri().path() {
+                        _ => println!("{} {}", req.method(), req.uri().path()),
+                    }
                     // Return 404 not found response.
                     Ok(Response::builder()
                         .status(StatusCode::NOT_FOUND)
