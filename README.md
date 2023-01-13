@@ -60,63 +60,65 @@ Restore the database before each running webserver
 
 ## single query, select by pk
 
-|test_name|  webserver_name |database| orm |req/sec|latency_p50|latency_p75|latency_p90|latency_p99|
+|test_name|  webserver_name |database| orm |requests_per_second|latency_p50|latency_p75|latency_p90|latency_p99|
 |---------|-----------------|--------|-----|-------------------|-----------|-----------|-----------|-----------|
-| get user|    actix-web    |postgres|False|      42695.91     |   2.23ms  |   2.67ms  |   3.14ms  |   4.17ms  |
-| get user|      sanic      |postgres|False|      17017.3      |   5.60ms  |   6.90ms  |   8.64ms  |  13.60ms  |
-| get user|      sanic      |  mysql |False|      15404.85     |   6.00ms  |   7.96ms  |  13.11ms  |  16.56ms  |
-| get user|aiohttp[gunicorn]|postgres|False|      13808.83     |   7.70ms  |   8.86ms  |  11.52ms  |  21.53ms  |
-| get user|aiohttp[gunicorn]|  mysql |False|      13070.92     |   6.13ms  |   9.45ms  |  14.93ms  |  16.76ms  |
-| get user| fastapi[uvicorn]|  mysql |False|       9330.6      |  10.21ms  |  13.81ms  |  18.81ms  |  21.99ms  |
-| get user| fastapi[uvicorn]|postgres|False|      9300.22      |  11.01ms  |  13.26ms  |  17.12ms  |  37.82ms  |
-| get user|aiohttp[gunicorn]|  mysql | True|      3796.48      |  24.79ms  |  38.93ms  |  51.32ms  |  89.35ms  |
-| get user|      sanic      |  mysql | True|      3722.48      |  22.77ms  |  31.82ms  |  51.32ms  |  69.62ms  |
-| get user|aiohttp[gunicorn]|postgres| True|      3547.97      |  19.34ms  |  43.92ms  |  79.25ms  |  202.06ms |
-| get user|      sanic      |postgres| True|      3532.72      |  24.24ms  |  42.59ms  |  73.48ms  |  221.97ms |
-| get user| fastapi[uvicorn]|  mysql | True|      3122.42      |  28.18ms  |  44.45ms  |  72.92ms  |  115.46ms |
-| get user| fastapi[uvicorn]|postgres| True|       2795.5      |  31.11ms  |  49.16ms  |  81.45ms  |  209.01ms |
-| get user|      django     |postgres| True|       745.29      |  113.03ms |  167.51ms |  180.18ms |  193.60ms |
-| get user|   django_asgi   |postgres| True|       616.12      |  130.52ms |  216.86ms |  315.62ms |  463.75ms |
+| get user|    actix-web    |postgres|False|      51206.91     |   1.87ms  |   2.21ms  |   2.56ms  |   3.31ms  |
+| get user|      sanic      |postgres|False|      18444.9      |   5.24ms  |   6.55ms  |   9.76ms  |  17.42ms  |
+| get user|      sanic      |  mysql |False|      17362.0      |   5.28ms  |   6.91ms  |  12.42ms  |  15.90ms  |
+| get user|aiohttp[gunicorn]|postgres|False|      15801.49     |   6.72ms  |   7.73ms  |   8.66ms  |  12.39ms  |
+| get user|aiohttp[gunicorn]|  mysql |False|      14511.92     |   6.49ms  |  11.25ms  |  14.44ms  |  19.59ms  |
+| get user| fastapi[uvicorn]|  mysql |False|      10597.79     |   5.07ms  |  16.98ms  |  32.43ms  |  44.55ms  |
+| get user| fastapi[uvicorn]|postgres|False|      10496.37     |   9.08ms  |  13.66ms  |  19.01ms  |  37.37ms  |
+| get user|      sanic      |postgres| True|      4976.13      |  16.40ms  |  37.74ms  |  59.00ms  |  168.36ms |
+| get user|      sanic      |  mysql | True|      4640.02      |  20.13ms  |  26.16ms  |  38.89ms  |  50.82ms  |
+| get user|aiohttp[gunicorn]|  mysql | True|      4628.34      |  18.55ms  |  28.75ms  |  43.32ms  |  72.57ms  |
+| get user|aiohttp[gunicorn]|postgres| True|      4465.36      |  18.66ms  |  32.90ms  |  51.64ms  |  142.45ms |
+| get user| fastapi[uvicorn]|postgres| True|      4022.73      |  25.58ms  |  46.62ms  |  67.47ms  |  172.25ms |
+| get user| fastapi[uvicorn]|  mysql | True|      3720.82      |  20.51ms  |  39.27ms  |  70.76ms  |  125.79ms |
 
 ## update query by pk with returning
 
-| test_name |  webserver_name |database| orm |req/sec|latency_p50|latency_p75|latency_p90|latency_p99|
+| test_name |  webserver_name |database| orm |requests_per_second|latency_p50|latency_p75|latency_p90|latency_p99|
 |-----------|-----------------|--------|-----|-------------------|-----------|-----------|-----------|-----------|
-|update user|    actix-web    |postgres|False|      16659.24     |   5.46ms  |   7.05ms  |   8.86ms  |  19.13ms  |
-|update user|      sanic      |postgres|False|      10574.87     |   8.96ms  |  11.17ms  |  13.38ms  |  18.97ms  |
-|update user|aiohttp[gunicorn]|postgres|False|      7456.68      |  12.85ms  |  18.42ms  |  23.44ms  |  36.48ms  |
-|update user| fastapi[uvicorn]|postgres|False|      6112.13      |  15.29ms  |  24.06ms  |  30.86ms  |  61.79ms  |
-|update user|      sanic      |  mysql |False|      5016.44      |  17.84ms  |  23.64ms  |  33.44ms  |  77.05ms  |
-|update user|aiohttp[gunicorn]|  mysql |False|      4088.09      |  21.57ms  |  30.32ms  |  42.54ms  |  527.23ms |
-|update user| fastapi[uvicorn]|  mysql |False|      3660.46      |  24.70ms  |  33.48ms  |  45.65ms  |  89.82ms  |
-|update user|aiohttp[gunicorn]|  mysql | True|      2299.73      |  39.38ms  |  56.77ms  |  71.60ms  |  103.33ms |
-|update user|      sanic      |  mysql | True|      2243.87      |  43.87ms  |  60.26ms  |  73.81ms  |  111.10ms |
-|update user| fastapi[uvicorn]|  mysql | True|      1915.04      |  49.00ms  |  71.02ms  |  89.06ms  |  496.85ms |
-|update user| fastapi[uvicorn]|postgres| True|       1903.7      |  52.91ms  |  68.11ms  |  96.91ms  |  194.88ms |
-|update user|      sanic      |postgres| True|      1846.27      |  46.40ms  |  67.18ms  |  98.79ms  |  205.93ms |
-|update user|aiohttp[gunicorn]|postgres| True|      1791.98      |  49.38ms  |  65.97ms  |  100.60ms |  309.37ms |
+|update user|    actix-web    |postgres|False|      15146.64     |   5.75ms  |   7.72ms  |  13.49ms  |  35.39ms  |
+|update user|      sanic      |postgres|False|      9977.64      |   9.27ms  |  12.16ms  |  19.61ms  |  45.51ms  |
+|update user|aiohttp[gunicorn]|postgres|False|      8689.96      |   8.74ms  |  16.57ms  |  24.87ms  |  145.77ms |
+|update user| fastapi[uvicorn]|postgres|False|      6290.28      |  14.55ms  |  19.67ms  |  26.45ms  |  44.63ms  |
+|update user|      sanic      |  mysql |False|      3996.28      |  21.68ms  |  33.60ms  |  48.11ms  |  100.03ms |
+|update user|aiohttp[gunicorn]|  mysql |False|      3692.28      |  24.42ms  |  34.67ms  |  54.42ms  |  135.78ms |
+|update user| fastapi[uvicorn]|  mysql |False|      3390.27      |  26.76ms  |  37.53ms  |  61.43ms  |  147.49ms |
+|update user|      sanic      |postgres| True|      2616.28      |  33.59ms  |  50.20ms  |  86.53ms  |  289.58ms |
+|update user|aiohttp[gunicorn]|  mysql | True|      2597.68      |  33.53ms  |  52.55ms  |  67.93ms  |  137.67ms |
+|update user|aiohttp[gunicorn]|postgres| True|      2426.91      |  39.41ms  |  64.36ms  |  109.40ms |  215.98ms |
+|update user|      sanic      |  mysql | True|      2252.01      |  41.49ms  |  60.61ms  |  75.45ms  |  117.92ms |
+|update user| fastapi[uvicorn]|  mysql | True|      2046.17      |  45.50ms  |  60.54ms  |  78.81ms  |  263.17ms |
+|update user| fastapi[uvicorn]|postgres| True|      1667.16      |  50.38ms  |  73.36ms  |  112.73ms |  200.01ms |
 
 ## plain text with reading header and query params
 
-|test_name|  webserver_name |database| orm|req/sec|latency_p50|latency_p75|latency_p90|latency_p99|
+|test_name|  webserver_name |database| orm|requests_per_second|latency_p50|latency_p75|latency_p90|latency_p99|
 |---------|-----------------|--------|----|-------------------|-----------|-----------|-----------|-----------|
-|  plain  |    actix-web    |  None  |None|     115057.17     |  425.00us |  556.00us |  740.00us |   0.95ms  |
-|  plain  |      sanic      |  None  |None|      59841.8      |   1.64ms  |   2.30ms  |   2.91ms  |   4.56ms  |
-|  plain  |aiohttp[gunicorn]|  None  |None|      40381.7      |   2.06ms  |   3.69ms  |   5.74ms  |   6.90ms  |
-|  plain  | fastapi[uvicorn]|  None  |None|      20734.05     |   3.88ms  |   8.65ms  |  12.87ms  |  20.62ms  |
-|  plain  |      django     |  None  |None|      11371.27     |   8.60ms  |   8.78ms  |   9.01ms  |   9.71ms  |
-|  plain  |   django_asgi   |  None  |None|      2168.31      |  48.40ms  |  77.84ms  |  109.43ms |  151.87ms |
+|  plain  |      hyper      |  None  |None|     122684.73     |  398.00us |  547.00us |  698.00us |   0.92ms  |
+|  plain  |    actix-web    |  None  |None|     120822.14     |  402.00us |  519.00us |  681.00us |   0.90ms  |
+|  plain  |      sanic      |  None  |None|      62475.41     |   1.72ms  |   2.28ms  |   3.10ms  |   5.10ms  |
+|  plain  |aiohttp[gunicorn]|  None  |None|      42771.58     |   1.72ms  |   4.25ms  |   5.99ms  |   8.88ms  |
+|  plain  |   hyper[sync]   |  None  |None|      27611.18     |  22.00us  |  31.00us  |  32.00us  |  38.00us  |
+|  plain  | fastapi[uvicorn]|  None  |None|      22601.78     |   5.12ms  |   6.44ms  |   8.07ms  |  11.80ms  |
+|  plain  |      django     |  None  |None|      11786.33     |   8.31ms  |   8.49ms  |   8.69ms  |   9.15ms  |
+|  plain  |   django_asgi   |  None  |None|      2050.62      |  47.17ms  |  64.42ms  |  80.98ms  |  122.38ms |
 
 ## json serialization with reading header and query params
 
-|test_name|  webserver_name |database| orm|req/sec|latency_p50|latency_p75|latency_p90|latency_p99|
+|test_name|  webserver_name |database| orm|requests_per_second|latency_p50|latency_p75|latency_p90|latency_p99|
 |---------|-----------------|--------|----|-------------------|-----------|-----------|-----------|-----------|
-| to json |    actix-web    |  None  |None|     114692.94     |  422.00us |  543.00us |  738.00us |   0.95ms  |
-| to json |      sanic      |  None  |None|      65103.3      |   1.24ms  |   1.75ms  |   2.49ms  |   4.39ms  |
-| to json |aiohttp[gunicorn]|  None  |None|      42652.95     |   2.26ms  |   3.17ms  |   3.94ms  |   5.42ms  |
-| to json | fastapi[uvicorn]|  None  |None|      22756.52     |   3.77ms  |   5.64ms  |   8.12ms  |  12.49ms  |
-| to json |      django     |  None  |None|      11000.97     |   8.76ms  |   8.97ms  |   9.22ms  |  203.64ms |
-| to json |   django_asgi   |  None  |None|      1691.61      |  72.35ms  |  116.38ms |  171.92ms |  241.95ms |
+| to json |      hyper      |  None  |None|     123304.23     |  398.00us |  557.00us |  699.00us |   0.92ms  |
+| to json |    actix-web    |  None  |None|     120712.25     |  401.00us |  514.00us |  681.00us |   0.90ms  |
+| to json |      sanic      |  None  |None|      65164.48     |   1.47ms  |   1.79ms  |   2.07ms  |   3.07ms  |
+| to json |aiohttp[gunicorn]|  None  |None|      45527.54     |   1.94ms  |   2.81ms  |   3.22ms  |   4.78ms  |
+| to json |   hyper[sync]   |  None  |None|      26695.98     |  23.00us  |  31.00us  |  32.00us  |  39.00us  |
+| to json | fastapi[uvicorn]|  None  |None|      23306.94     |   4.53ms  |   6.01ms  |   8.59ms  |  12.20ms  |
+| to json |      django     |  None  |None|      11382.3      |   8.40ms  |   8.59ms  |   8.82ms  |  852.48ms |
+| to json |   django_asgi   |  None  |None|      2251.88      |  45.41ms  |  61.54ms  |  90.64ms  |  115.91ms |
 
 # Run
 

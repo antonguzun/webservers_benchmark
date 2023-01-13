@@ -10,7 +10,7 @@ from markdownTable import markdownTable
 if __name__ == "__main__":
     import json
 
-    with open("./reports/2023-01-12.json", "r") as f:
+    with open("./reports/2023-01-13.json", "r") as f:
         data = json.loads(f.read())["results"]
     df = pd.DataFrame.from_dict(
         {i: r for (i, r) in enumerate(data)},

@@ -43,7 +43,6 @@ fn ping_handler() -> Result<Response<BoxBody>> {
     Ok(response)
 }
 
-
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub struct ParamsQuery {
     pub param1: String,
@@ -107,23 +106,20 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
     loop {
         let (stream, _) = listener.accept().await?;
-        let service = service_fn(move |req| 
+        let service = service_fn(move |req| async {
             match (req.method(), req.uri().path()) {
                 (&Method::GET, "/ping/") => ping_handler(),
                 (&Method::GET, "/plain/") => plain_handler(req),
                 (&Method::GET, "/to_json/") => to_json_handler(req),
-                _ => {
-                    Ok(Response::builder()
-                                .status(StatusCode::NOT_FOUND)
-                                .body(full(NOTFOUND))
-                                .unwrap())
-                    }
-                }
-        );
-
+                _ => Ok(Response::builder()
+                    .status(StatusCode::NOT_FOUND)
+                    .body(full(NOTFOUND))
+                    .unwrap()),
+            }
+        });
 
         if let Err(err) = http1::Builder::new()
-        .serve_connection(stream, service)
+            .serve_connection(stream, service)
             .await
         {
             println!("Error serving connection: {:?}", err);
