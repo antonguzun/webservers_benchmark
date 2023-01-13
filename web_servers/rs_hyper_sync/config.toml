@@ -1,0 +1,10 @@
+name = "hyper[sync]"
+language = "rust"
+
+[run_options]
+[run_options.sync]
+BUILD_COMMAND = "cargo build --release"
+RUN_COMMAND = "cargo run --manifest-path web_servers/rs_hyper_sync/Cargo.toml --release > /dev/null"
+database = "postgres"
+orm = false
+

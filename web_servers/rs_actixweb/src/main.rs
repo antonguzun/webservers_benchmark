@@ -23,7 +23,7 @@ impl Guard for SimpleTokenChecker {
 
 pub async fn get_user_by_id(user_id: web::Path<u32>, resources: Data<Resources>) -> impl Responder {
     let user_id = user_id.into_inner() as i32;
-    let user_repo = UserRepo::new(resources.db_pool.clone());
+    let user_repo = UserRepo::new(&resources.db_pool);
     match get_user::get_user_by_id(&user_repo, user_id).await {
         Ok(user) => HttpResponse::Ok().json(user),
         Err(UserUCError::NotFoundError) => HttpResponse::NotFound().body("Not Found"),
@@ -48,7 +48,7 @@ pub async fn update_user_handler(
     let user_id = user_id.into_inner() as i32;
     let username = user_data.username.to_string();
     let email = user_data.email.to_string();
-    let user_access_model = UserRepo::new(resources.db_pool.clone());
+    let user_access_model = UserRepo::new(&resources.db_pool);
     match user_updater::update_user(&user_access_model, username, email, user_id).await {
         Ok(user) => HttpResponse::Ok().json(user),
         Err(_) => {
