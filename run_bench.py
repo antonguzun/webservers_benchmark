@@ -71,6 +71,8 @@ if __name__ == "__main__":
         try:
             with open(f"{web_server}/config.toml", "rb") as f:
                 config = tomllib.load(f)
+            if config["name"] != "axum":
+                continue
             for run_setup_name, run_option in config["run_options"].items():
                 print(f"Running benchmarks for {config['name']} {run_setup_name}")
                 print(f"Build {config['name']}")
