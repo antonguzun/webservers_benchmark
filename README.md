@@ -17,7 +17,10 @@ Python3.11 for python webservers
 
 # Methodology
 
-Each webserver run in single thread
+Each webserver run in single thread and single process.
+That makes easier maintenance, log/metrics collection, resources manipulation.
+I guess the optimal scenario is using external load balancer as nginx/istio/ingress.
+Ofc if you are using python with wsgi/asgi webservers you could get better measurements without extra infrastructure.
 
 Produce requests for random object with random params
 
