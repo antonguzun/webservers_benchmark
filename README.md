@@ -13,7 +13,9 @@ AMD Ryzen 7 PRO 5750G with Radeon Graphics
 
 Fedora Linux 35
 
-Python3.11 for python webservers
+Python3.11 (cpython interpreter) for python webservers
+rustc 1.65.0 (897e37553 2022-11-02) for rust webservers
+
 
 # Methodology
 
