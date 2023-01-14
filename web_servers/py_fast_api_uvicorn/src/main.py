@@ -1,4 +1,4 @@
-import json
+import ujson
 import logging
 
 from fastapi import FastAPI, Request, Response
@@ -36,7 +36,7 @@ async def update_user(request: Request, user_id: int, data: entities.UpdateUser)
 async def to_json(request: Request, param1: str, param2: str, param3: str):
     if request.headers.get("token") != "hardcoded_token":
         return Response(status_code=403, content='{description: "unauthorized"}')
-    return Response(status_code=200, content=json.dumps({"param1": param1, "param2": param2, "param3": param3}))
+    return Response(status_code=200, content=ujson.dumps({"param1": param1, "param2": param2, "param3": param3}))
 
 
 @app.get("/plain/")

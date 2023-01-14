@@ -1,4 +1,4 @@
-import json
+import ujson
 import logging
 
 import uvloop
@@ -38,7 +38,7 @@ async def to_json(request: Request):
     param1 = request.query.get("param1")
     param2 = request.query.get("param2")
     param3 = request.query.get("param3")
-    return Response(status=200, body=json.dumps({"param1": param1, "param2": param2, "param3": param3}))
+    return Response(status=200, body=ujson.dumps({"param1": param1, "param2": param2, "param3": param3}))
 
 
 async def plain(request: Request):

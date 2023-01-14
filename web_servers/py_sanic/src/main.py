@@ -1,4 +1,3 @@
-import json
 import logging
 
 from sanic import Request, Sanic, json, text
