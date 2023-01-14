@@ -97,7 +97,7 @@ async fn main() {
         .with_state(shared_state)
         .route_layer(middleware::from_fn(auth));
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 8001));
+    let addr = SocketAddr::from(([127, 0, 0, 1], 8000));
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
