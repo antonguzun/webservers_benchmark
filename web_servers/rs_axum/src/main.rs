@@ -1,10 +1,10 @@
 use axum::{
-    extract::{State, Path, Query},
-    routing::{get},
+    extract::{Path, Query, State},
     http::{self, Request, StatusCode},
-    response::{IntoResponse, Response},
-    Json, Router,
     middleware::{self, Next},
+    response::{IntoResponse, Response},
+    routing::get,
+    Json, Router,
 };
 use http::header::{HeaderName, HeaderValue};
 use serde::{Deserialize, Serialize};
@@ -16,30 +16,34 @@ use bench::common::{Config, Resources};
 use bench::storage::postgres::user_repo::UserRepo;
 use bench::usecases::users::{get_user, user_updater};
 
+pub async fn get_user_by_id(
+    Path(user_id): Path<i32>,
+    State(state): State<Arc<AppState>>,
+) -> impl IntoResponse {
+    let user_repo = UserRepo::new(&state.resources.db_pool);
+    let user = get_user::get_user_by_id(&user_repo, user_id).await.unwrap();
+    (StatusCode::OK, Json(user))
+}
 
-// pub async fn get_user_by_id(Path(user_id): Path<i32>, State(state): State<AppState>) -> impl IntoResponse {
-//     let user_repo = UserRepo::new(&state.resources.db_pool);
-//     let user = get_user::get_user_by_id(&user_repo, user_id).await.unwrap();
-//     (StatusCode::OK, Json(user))
-// }
+#[derive(Deserialize, Serialize)]
+pub struct UserUpdateScheme {
+    pub email: String,
+    pub username: String,
+}
 
-// #[derive(Deserialize, Serialize)]
-// pub struct UserUpdateScheme {
-//     pub email: String,
-//     pub username: String,
-// }
-
-// pub async fn update_user_handler(
-//     Path(user_id): Path<i32>,
-//     Json(payload): Json<UserUpdateScheme>,
-//     State(state): State<AppState>,
-// ) -> impl IntoResponse {
-//     let username = payload.username.to_string();
-//     let email = payload.email.to_string();
-//     let user_access_model = UserRepo::new(&state.resources.db_pool);
-//     let user = user_updater::update_user(&user_access_model, username, email, user_id).await.unwrap();
-//     (StatusCode::OK, Json(user))
-// }
+pub async fn update_user_handler(
+    Path(user_id): Path<i32>,
+    Json(payload): Json<UserUpdateScheme>,
+    State(state): State<Arc<AppState>>,
+) -> impl IntoResponse {
+    let username = payload.username.to_string();
+    let email = payload.email.to_string();
+    let user_access_model = UserRepo::new(&state.resources.db_pool);
+    let user = user_updater::update_user(&user_access_model, username, email, user_id)
+        .await
+        .unwrap();
+    (StatusCode::OK, Json(user))
+}
 
 #[derive(Deserialize, Serialize)]
 pub struct ParamsQuery {
@@ -58,18 +62,15 @@ pub async fn plain_handler(Query(query): Query<ParamsQuery>) -> impl IntoRespons
 
 pub async fn to_json_handler(Query(query): Query<ParamsQuery>) -> impl IntoResponse {
     (StatusCode::OK, Json(query))
-
 }
 
 pub async fn ping_handler() -> impl IntoResponse {
     (StatusCode::OK, "pong")
 }
 
-
-
-struct AppState {
-    config: Config,
-    resources: Resources,
+pub struct AppState {
+    pub config: Config,
+    pub resources: Resources,
 }
 
 async fn auth<B>(mut req: Request<B>, next: Next<B>) -> Result<Response, StatusCode> {
@@ -78,8 +79,8 @@ async fn auth<B>(mut req: Request<B>, next: Next<B>) -> Result<Response, StatusC
     } else {
         Err(StatusCode::UNAUTHORIZED)
     }
-
 }
+
 #[tokio::main(flavor = "current_thread")]
 async fn main() {
     let config = Config::create_config();
@@ -91,11 +92,12 @@ async fn main() {
         .route("/ping/", get(ping_handler))
         .route("/plain/", get(plain_handler))
         .route("/to_json/", get(to_json_handler))
+        .route("/user/:user_id/", get(get_user_by_id))
         // .route("/user/:user_id/", get(get_user_by_id).patch(update_user_handler))
         .with_state(shared_state)
         .route_layer(middleware::from_fn(auth));
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 8000));
+    let addr = SocketAddr::from(([127, 0, 0, 1], 8001));
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
