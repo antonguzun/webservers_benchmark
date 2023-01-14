@@ -17,7 +17,7 @@ Python3.11 for python webservers
 
 # Methodology
 
-Each webserver run in 8 threads or processes
+Each webserver run in single thread
 
 Produce requests for random object with random params
 
@@ -27,7 +27,7 @@ Restore the database before each running webserver
 
 # Tests
 
-`get user` is a test which produces:
+`get user` is a test which do:
 
 - deserialization path and headers
 - comparison token header
@@ -35,7 +35,7 @@ Restore the database before each running webserver
 - deserialization row into object/structure
 - serialization into json
 
-`update user` is a test which produces:
+`update user` is a test which do:
 
 - deserialization path, headers and body
 - comparison token header
@@ -44,13 +44,13 @@ Restore the database before each running webserver
 - deserialization row into object/structure
 - serialization into json
 
-`plain` is a test which produces:
+`plain` is a test which do:
 
 - deserialization path, headers
 - comparison token header
 - serialization params into string
 
-`to json` is a test which produces:
+`to json` is a test which do:
 
 - deserialization path, headers
 - comparison token header

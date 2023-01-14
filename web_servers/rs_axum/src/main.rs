@@ -80,7 +80,7 @@ async fn auth<B>(mut req: Request<B>, next: Next<B>) -> Result<Response, StatusC
     }
 
 }
-#[tokio::main]
+#[tokio::main(flavor = "current_thread")]
 async fn main() {
     let config = Config::create_config();
     let resources = Resources::create_resources(&config).await;

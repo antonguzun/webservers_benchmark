@@ -4,24 +4,22 @@ language = "python"
 [run_options]
 [run_options.postgres_raw]
 BUILD_COMMAND = "python3.11 -m venv venv && source ./venv/bin/activate && pip install -r requirements.txt"
-RUN_COMMAND = "PYTHONPATH=./web_servers/py_sanic DATABASE=postgres_raw ./web_servers/py_sanic/venv/bin/sanic --factory src.main:create_app --host=localhost --port=8000 --workers=8  > /dev/null"
+RUN_COMMAND = "PYTHONPATH=./web_servers/py_sanic DATABASE=postgres_raw ./web_servers/py_sanic/venv/bin/sanic --factory src.main:create_app --host=localhost --port=8000 --single-process  > /dev/null"
 database = "postgres"
-orm = false
 
 [run_options.postgres_alchemy]
 BUILD_COMMAND = "python3.11 -m venv venv && source ./venv/bin/activate && pip install -r requirements.txt"
-RUN_COMMAND = "PYTHONPATH=./web_servers/py_sanic DATABASE=postgres_alchemy ./web_servers/py_sanic/venv/bin/sanic --factory src.main:create_app --host=localhost --port=8000 --workers=8  > /dev/null"
+RUN_COMMAND = "PYTHONPATH=./web_servers/py_sanic DATABASE=postgres_alchemy ./web_servers/py_sanic/venv/bin/sanic --factory src.main:create_app --host=localhost --port=8000 --single-process  > /dev/null"
 database = "postgres"
-orm = true
+orm = "SQLAlchemy ORM"
 
 [run_options.mysql_raw]
 BUILD_COMMAND = "python3.11 -m venv venv && source ./venv/bin/activate && pip install -r requirements.txt"
-RUN_COMMAND = "PYTHONPATH=./web_servers/py_sanic DATABASE=mysql_raw ./web_servers/py_sanic/venv/bin/sanic --factory src.main:create_app --host=localhost --port=8000 --workers=8  > /dev/null"
+RUN_COMMAND = "PYTHONPATH=./web_servers/py_sanic DATABASE=mysql_raw ./web_servers/py_sanic/venv/bin/sanic --factory src.main:create_app --host=localhost --port=8000 --single-process  > /dev/null"
 database = "mysql"
-orm = false
 
 [run_options.mysql_alchemy]
 BUILD_COMMAND = "python3.11 -m venv venv && source ./venv/bin/activate && pip install -r requirements.txt"
-RUN_COMMAND = "PYTHONPATH=./web_servers/py_sanic DATABASE=mysql_alchemy ./web_servers/py_sanic/venv/bin/sanic --factory src.main:create_app --host=localhost --port=8000 --workers=8  > /dev/null"
+RUN_COMMAND = "PYTHONPATH=./web_servers/py_sanic DATABASE=mysql_alchemy ./web_servers/py_sanic/venv/bin/sanic --factory src.main:create_app --host=localhost --port=8000 --single-process  > /dev/null"
 database = "mysql"
-orm = true
+orm = "SQLAlchemy ORM"

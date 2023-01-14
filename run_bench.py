@@ -7,10 +7,11 @@ from pathlib import Path
 import psutil
 import pydantic
 import tomllib
+import requests
 
 web_servers_path = Path("web_servers")
 
-WRK_COMMAND = "wrk -t2 -c100 -d60s --latency -s ./wrk_scripts/{script_name} http://127.0.0.1:8000/"
+WRK_COMMAND = "wrk -t2 -c100 -d3s --latency -s ./wrk_scripts/{script_name} http://127.0.0.1:8000/"
 GET_USER_BENCH = dict(name="get user", wrk_command=WRK_COMMAND.format(script_name="get_user_by_pk.lua"))
 UPDATE_USER_BENCH = dict(name="update user", wrk_command=WRK_COMMAND.format(script_name="update_user.lua"))
 PLAIN_TEXT_BENCH = dict(name="plain", wrk_command=WRK_COMMAND.format(script_name="plain.lua"))
@@ -23,7 +24,7 @@ class BenchResult(pydantic.BaseModel):
     webserver_name: str
     language: str
     database: str | None
-    orm: bool | None
+    orm: str | None
 
     requests_per_second: float
     latency_p50: str
@@ -33,7 +34,7 @@ class BenchResult(pydantic.BaseModel):
 
     @classmethod
     def create_from_wrk_output(
-        cls, webserver_name: str, test_name: str, language:str, database: str, orm: bool, output: str
+        cls, webserver_name: str, test_name: str, language:str, database: str, orm: str | None, output: str
     ) -> "BenchResult":
         data = output.splitlines()
         return cls(
@@ -61,6 +62,18 @@ def clean_db():
     os.system("mysql --user=user --password=pass --port=13306 --protocol=tcp webservers_bench < mysql_db.sql")
     time.sleep(1)
 
+def check_service():
+    cnt = 3
+    while cnt > 0:
+        try:
+            ping_res = requests.get("localhost:8000/ping/")
+            if ping_res.status == 200:
+                return
+        except Exception:
+            pass
+        time.sleep(5)
+        cnt -= 1
+
 
 if __name__ == "__main__":
     print("Running benchmarks")
@@ -71,8 +84,6 @@ if __name__ == "__main__":
         try:
             with open(f"{web_server}/config.toml", "rb") as f:
                 config = tomllib.load(f)
-            if config["name"] != "axum":
-                continue
             for run_setup_name, run_option in config["run_options"].items():
                 print(f"Running benchmarks for {config['name']} {run_setup_name}")
                 print(f"Build {config['name']}")
@@ -85,8 +96,8 @@ if __name__ == "__main__":
                 )
                 print(f"started {web_server_process.pid}")
                 try:
-                    time.sleep(5)
                     for wrk_test in WRK_TESTS:
+                        check_service()
                         if wrk_test['name'] in STATELESS_TEST_NAMES \
                             and f"{config['name']}_{wrk_test['name']}" in finished:
                             continue
@@ -101,8 +112,8 @@ if __name__ == "__main__":
                                 webserver_name=config["name"],
                                 language=config["language"],
                                 test_name=wrk_test["name"],
-                                database=run_option["database"] if wrk_test['name'] not in STATELESS_TEST_NAMES else None,
-                                orm=run_option["orm"] if wrk_test['name'] not in STATELESS_TEST_NAMES else None,
+                                database=run_option.get("database") if wrk_test['name'] not in STATELESS_TEST_NAMES else None,
+                                orm=run_option.get("orm") if wrk_test['name'] not in STATELESS_TEST_NAMES else None,
                                 output=wrk_process.stdout,
                             )
                             summary.results.append(result)
@@ -118,7 +129,7 @@ if __name__ == "__main__":
                         except Exception:
                             pass
                     p.kill()
-                    time.sleep(5)
+                    time.sleep(1)
         except FileNotFoundError:
             print(f"Skipping {web_server} as it doesn't have a config.toml file")
             continue

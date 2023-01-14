@@ -1,8 +1,6 @@
 import os
 from enum import Enum
 
-import sentry_sdk
-
 DEBUG = False
 
 MYSQL_URI = os.environ.get("MYSQL_URI", "fake")
@@ -30,6 +28,3 @@ match CHOSEN_DB:
         raise NotImplementedError(f"Database not implemented: {CHOSEN_DB}")
 
 RABBITMQ_URI = os.environ.get("RABBITMQ_URI", "fake")
-
-
-sentry_sdk.init(dsn="")
