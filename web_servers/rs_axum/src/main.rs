@@ -3,10 +3,10 @@ use axum::{
     http::{self, Request, StatusCode},
     middleware::{self, Next},
     response::{IntoResponse, Response},
-    routing::get,
+    routing::{get, patch},
     Json, Router,
 };
-use http::header::{HeaderName, HeaderValue};
+use http::header::HeaderValue;
 use serde::{Deserialize, Serialize};
 
 use std::net::SocketAddr;
@@ -34,7 +34,7 @@ pub struct UserUpdateScheme {
 pub async fn update_user_handler(
     Path(user_id): Path<i32>,
     Json(payload): Json<UserUpdateScheme>,
-    State(state): State<Arc<AppState>>,
+    state: Arc<AppState>,
 ) -> impl IntoResponse {
     let username = payload.username.to_string();
     let email = payload.email.to_string();
@@ -73,7 +73,7 @@ pub struct AppState {
     pub resources: Resources,
 }
 
-async fn auth<B>(mut req: Request<B>, next: Next<B>) -> Result<Response, StatusCode> {
+async fn auth<B>(req: Request<B>, next: Next<B>) -> Result<Response, StatusCode> {
     if req.headers().get("token") == Some(&HeaderValue::from_str("hardcoded_token").unwrap()) {
         Ok(next.run(req).await)
     } else {
@@ -87,13 +87,18 @@ async fn main() {
     let resources = Resources::create_resources(&config).await;
 
     let shared_state = Arc::new(AppState { config, resources });
-
     let app = Router::new()
         .route("/ping/", get(ping_handler))
         .route("/plain/", get(plain_handler))
         .route("/to_json/", get(to_json_handler))
         .route("/user/:user_id/", get(get_user_by_id))
-        // .route("/user/:user_id/", get(get_user_by_id).patch(update_user_handler))
+        .route(
+            "/user/:user_id/",
+            patch({
+                let shared_state = Arc::clone(&shared_state);
+                move |path, json| update_user_handler(path, json, shared_state)
+            }),
+        )
         .with_state(shared_state)
         .route_layer(middleware::from_fn(auth));
 
