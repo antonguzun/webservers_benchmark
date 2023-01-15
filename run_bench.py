@@ -11,6 +11,7 @@ import requests
 
 web_servers_path = Path("web_servers")
 
+
 WRK_COMMAND = "wrk -t2 -c100 -d3s --latency -s ./wrk_scripts/{script_name} http://127.0.0.1:8000/"
 GET_USER_BENCH = dict(name="get user", wrk_command=WRK_COMMAND.format(script_name="get_user_by_pk.lua"))
 UPDATE_USER_BENCH = dict(name="update user", wrk_command=WRK_COMMAND.format(script_name="update_user.lua"))
@@ -18,6 +19,7 @@ PLAIN_TEXT_BENCH = dict(name="plain", wrk_command=WRK_COMMAND.format(script_name
 TO_JSON_BENCH = dict(name="to json", wrk_command=WRK_COMMAND.format(script_name="to_json.lua"))
 WRK_TESTS = [GET_USER_BENCH, UPDATE_USER_BENCH, TO_JSON_BENCH, PLAIN_TEXT_BENCH]
 STATELESS_TEST_NAMES = [TO_JSON_BENCH["name"], PLAIN_TEXT_BENCH["name"]]
+
 
 class BenchResult(pydantic.BaseModel):
     test_name: str
@@ -62,8 +64,18 @@ def clean_db():
     os.system("mysql --user=user --password=pass --port=13306 --protocol=tcp webservers_bench < mysql_db.sql")
     time.sleep(1)
 
+
+def database_name(config: dict, test_name: str) -> str:
+    if test_name in STATELESS_TEST_NAMES:
+        return None
+    res = config["database"]
+    if config["db_client"]:
+        res += f"[{config['db_client']}]"
+    return res
+
+
 def check_service():
-    cnt = 3
+    cnt = 5
     while cnt > 0:
         try:
             ping_res = requests.get("localhost:8000/ping/")
@@ -112,7 +124,7 @@ if __name__ == "__main__":
                                 webserver_name=config["name"],
                                 language=config["language"],
                                 test_name=wrk_test["name"],
-                                database=run_option.get("database") if wrk_test['name'] not in STATELESS_TEST_NAMES else None,
+                                database=database_name(run_option, wrk_test["name"]),
                                 orm=run_option.get("orm") if wrk_test['name'] not in STATELESS_TEST_NAMES else None,
                                 output=wrk_process.stdout,
                             )

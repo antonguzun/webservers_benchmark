@@ -6,20 +6,24 @@ language = "python"
 BUILD_COMMAND = "python3.11 -m venv venv && source ./venv/bin/activate && pip install -r requirements.txt"
 RUN_COMMAND = "PYTHONPATH=./web_servers/py_aiohttp DATABASE=postgres_raw ./web_servers/py_aiohttp/venv/bin/python ./web_servers/py_aiohttp/src/main.py  > /dev/null"
 database = "postgres"
+db_client = "asyncpg"
 
 [run_options.postgres_alchemy]
 BUILD_COMMAND = "python3.11 -m venv venv && source ./venv/bin/activate && pip install -r requirements.txt"
 RUN_COMMAND = "PYTHONPATH=./web_servers/py_aiohttp DATABASE=postgres_alchemy ./web_servers/py_aiohttp/venv/bin/python ./web_servers/py_aiohttp/src/main.py  > /dev/null"
 database = "postgres"
 orm = "SQLAlchemy ORM"
+db_client = "asyncpg"
 
 [run_options.mysql_raw]
 BUILD_COMMAND = "python3.11 -m venv venv && source ./venv/bin/activate && pip install -r requirements.txt"
 RUN_COMMAND = "PYTHONPATH=./web_servers/py_aiohttp DATABASE=mysql_raw ./web_servers/py_aiohttp/venv/bin/python ./web_servers/py_aiohttp/src/main.py  > /dev/null"
 database = "mysql"
+db_client = "aiomysql"
 
 [run_options.mysql_alchemy]
 BUILD_COMMAND = "python3.11 -m venv venv && source ./venv/bin/activate && pip install -r requirements.txt"
 RUN_COMMAND = "PYTHONPATH=./web_servers/py_aiohttp DATABASE=mysql_alchemy ./web_servers/py_aiohttp/venv/bin/python ./web_servers/py_aiohttp/src/main.py  > /dev/null"
-database = "mysql"
+database = "mysql[aiomysql]"
 orm = "SQLAlchemy ORM"
+db_client = "aiomysql"

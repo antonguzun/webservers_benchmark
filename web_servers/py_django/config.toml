@@ -7,7 +7,7 @@ BUILD_COMMAND = "python3.11 -m venv venv && source ./venv/bin/activate && pip in
 RUN_COMMAND = "PYTHONPATH=./web_servers/py_django DATABASE=postgres_orm ./web_servers/py_django/venv/bin/gunicorn bench.wsgi --bind localhost:8000 --workers=1  > /dev/null"
 database = "postgres"
 orm = "Django ORM"
-
+db_client = "psycopg2"
 
 # [run_options.mysql_orm]
 # BUILD_COMMAND = "python3.11 -m venv venv && source ./venv/bin/activate && pip install -r requirements.txt"
