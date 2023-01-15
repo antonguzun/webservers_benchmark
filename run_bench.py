@@ -141,7 +141,7 @@ if __name__ == "__main__":
                         except Exception:
                             pass
                     p.kill()
-                    time.sleep(1)
+                    time.sleep(5)
         except FileNotFoundError:
             print(f"Skipping {web_server} as it doesn't have a config.toml file")
             continue

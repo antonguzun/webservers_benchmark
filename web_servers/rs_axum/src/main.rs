@@ -82,6 +82,7 @@ async fn auth<B>(req: Request<B>, next: Next<B>) -> Result<Response, StatusCode>
 }
 
 
+#[tokio::main]
 async fn main() {
     let config = Config::create_config();
     let resources = Resources::create_resources(&config).await;
