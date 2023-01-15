@@ -107,7 +107,6 @@ pub fn run_server(resources: Resources, config: Config) -> Result<Server, std::i
             )
     })
     .bind("127.0.0.1:8000")?
-    .workers(1)
     .run();
     Ok(server)
 }

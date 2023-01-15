@@ -1,6 +1,10 @@
 .vscode
+# python
 **/venv/*
-**/target/*
 **/__pycache__/*
 **/*.pyc
 *.pyc
+# rust
+**/target/*
+# go binaries
+**/main

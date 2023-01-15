@@ -20,7 +20,7 @@ rustc 1.65.0 (897e37553 2022-11-02) for rust webservers
 
 # Methodology
 
-Each webserver run in single thread and single process.
+Each webserver run in single process.
 That makes easier maintenance, log/metrics collection, resources manipulation.
 I guess the optimal scenario is using external load balancer as nginx/istio/ingress.
 Ofc if you are using python with wsgi/asgi webservers you could get better measurements without extra infrastructure.
@@ -176,5 +176,5 @@ curl -XGET 'localhost:8000/user/5/' --header 'token: hardcoded_token'
 ```
 
 ```
-curl -XPATCH 'localhost:8000/user/5/' --header 'token: hardcoded_token' -d '{"username":"asdsfafaf", "email": "asdsagagwe324@gmail.com"}' --header 'Content-Type: application/json'
+curl -XPATCH 'localhost:8000/user/5/' --header 'token: hardcoded_token'  --header 'Content-Type: application/json' -d '{"username":"asdsfafaf", "email": "asdsagagwe324@gmail.com"}'
 ```

@@ -12,7 +12,7 @@ import requests
 web_servers_path = Path("web_servers")
 
 
-WRK_COMMAND = "wrk -t2 -c100 -d3s --latency -s ./wrk_scripts/{script_name} http://127.0.0.1:8000/"
+WRK_COMMAND = "wrk -t2 -c100 -d60s --latency -s ./wrk_scripts/{script_name} http://127.0.0.1:8000/"
 GET_USER_BENCH = dict(name="get user", wrk_command=WRK_COMMAND.format(script_name="get_user_by_pk.lua"))
 UPDATE_USER_BENCH = dict(name="update user", wrk_command=WRK_COMMAND.format(script_name="update_user.lua"))
 PLAIN_TEXT_BENCH = dict(name="plain", wrk_command=WRK_COMMAND.format(script_name="plain.lua"))

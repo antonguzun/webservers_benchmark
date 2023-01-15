@@ -14,6 +14,7 @@ extern crate serde_qs as qs;
 use std::future::Future;
 use std::net::SocketAddr;
 use std::pin::Pin;
+use std::sync::Arc;
 
 use bench::common::{Config, Resources};
 use bench::storage::postgres::user_repo::UserRepo;
@@ -42,26 +43,26 @@ async fn ping_handler() -> Result<Response<BoxBody>> {
     Ok(response)
 }
 
-pub async fn get_user_by_id(user_id: i32, resources: &Resources) -> Result<Response<BoxBody>> {
-    let user_repo = UserRepo::new(&resources.db_pool);
-    let response = match get_user::get_user_by_id(&user_repo, user_id).await {
-        Ok(user) => Response::builder()
-            .status(StatusCode::OK)
-            .body(full(serde_json::to_string(&user)?))?,
-        Err(UserUCError::NotFoundError) => Response::builder()
-            .status(StatusCode::NOT_FOUND)
-            .body(full(NOTFOUND))
-            .unwrap(),
-        Err(_) => {
-            // error!("usecase error");
-            Response::builder()
-                .status(StatusCode::INTERNAL_SERVER_ERROR)
-                .body(full(INTERNAL_SERVER_ERROR))
-                .unwrap()
-        }
-    };
-    Ok(response)
-}
+// pub async fn get_user_by_id(user_id: i32, resources: Arc<Resources>) -> Result<Response<BoxBody>> {
+//     let user_repo = UserRepo::new(&resources.db_pool);
+//     let response = match get_user::get_user_by_id(&user_repo, user_id).await {
+//         Ok(user) => Response::builder()
+//             .status(StatusCode::OK)
+//             .body(full(serde_json::to_string(&user)?))?,
+//         Err(UserUCError::NotFoundError) => Response::builder()
+//             .status(StatusCode::NOT_FOUND)
+//             .body(full(NOTFOUND))
+//             .unwrap(),
+//         Err(_) => {
+//             // error!("usecase error");
+//             Response::builder()
+//                 .status(StatusCode::INTERNAL_SERVER_ERROR)
+//                 .body(full(INTERNAL_SERVER_ERROR))
+//                 .unwrap()
+//         }
+//     };
+//     Ok(response)
+// }
 
 // #[derive(Deserialize, Serialize)]
 // pub struct UserUpdateScheme {
@@ -145,7 +146,7 @@ fn full<T: Into<Bytes>>(chunk: T) -> BoxBody {
         .boxed()
 }
 
-#[tokio::main(flavor = "current_thread")]
+
 async fn main() -> std::result::Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let addr: SocketAddr = ([127, 0, 0, 1], 8000).into();
 
@@ -161,7 +162,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error + Send + Sy
             let resources = Resources::create_resources(&config).await;
             if let Err(err) = http1::Builder::new()
                 // `service_fn` converts our function in a `Service`
-                .serve_connection(stream, Srv { config, resources })
+                .serve_connection(stream, Srv { config, resources: Arc::new(resources) })
                 .await
             {
                 println!("Error serving connection: {:?}", err);
@@ -172,7 +173,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error + Send + Sy
 
 struct Srv {
     config: Config,
-    resources: Resources,
+    resources: Arc<Resources>,
 }
 
 impl Service<Request<IncomingBody>> for Srv {
@@ -198,7 +199,7 @@ impl Service<Request<IncomingBody>> for Srv {
                     match user_id {
                         Some(user_id) => {
                             match req.method() {
-                                // &Method::GET => get_user_by_id(user_id, &self.resources).await,
+                                // &Method::GET => get_user_by_id(user_id, Arc::clone(&self.resources)).await,
                                 // &Method::PATCH => {
                                 //     // Return 200 OK response.
                                 //     let response = Response::builder()
