@@ -17,6 +17,7 @@ Python3.11 (cpython interpreter) for python webservers
 
 rustc 1.65.0 (897e37553 2022-11-02) for rust webservers
 
+go 1.19.5 for go webservers
 
 # Methodology
 
@@ -68,8 +69,9 @@ Restore the database before each running webserver
 
 |language|  webserver_name |database|      orm     |requests_per_second|latency_p50|latency_p75|latency_p90|latency_p99|
 |--------|-----------------|--------|--------------|-------------------|-----------|-----------|-----------|-----------|
-|  rust  |    actix-web    |postgres|     None     |      20453.14     |   4.77ms  |   5.15ms  |   5.40ms  |  62.26ms  |
-|  rust  |       axum      |postgres|     None     |      19990.2      |   4.73ms  |   5.59ms  |   6.29ms  |  74.62ms  |
+|   go   |       gin      |      postgres[pgx/v5]     |   None   |      57676.83     |   1.54ms  |   1.87ms  |   2.42ms  |   3.53ms  |
+|  rust  |    actix-web   |postgres[deadpool-postgres]|   None   |      39751.54     |   2.35ms  |   2.95ms  |   3.60ms  |   5.25ms  |
+|  rust  |       axum      |postgres[deadpool-postgres]|     None     |      19990.2      |   4.73ms  |   5.59ms  |   6.29ms  |  74.62ms  |
 | python |      sanic      |postgres|     None     |      5210.99      |  18.92ms  |  19.47ms  |  20.27ms  |  37.29ms  |
 | python |      sanic      |  mysql |     None     |      3708.09      |  26.12ms  |  26.74ms  |  27.44ms  |  47.20ms  |
 | python |aiohttp[gunicorn]|postgres|     None     |      3008.69      |  32.31ms  |  60.09ms  |  111.95ms |  199.07ms |
@@ -89,10 +91,11 @@ Restore the database before each running webserver
 
 |language|  webserver_name |database|      orm     |requests_per_second|latency_p50|latency_p75|latency_p90|latency_p99|
 |--------|-----------------|--------|--------------|-------------------|-----------|-----------|-----------|-----------|
-|  rust  |    actix-web    |postgres|     None     |      14981.35     |   6.51ms  |   6.99ms  |   7.56ms  |  10.09ms  |
-|  rust  |       axum      |postgres|     None     |      12746.7      |   6.74ms  |   7.91ms  |  12.32ms  |  57.32ms  |
-| python |      sanic      |postgres|     None     |       3784.3      |  23.84ms  |  25.01ms  |  43.80ms  |  72.64ms  |
-| python |aiohttp[gunicorn]|postgres|     None     |      2528.21      |  38.72ms  |  39.62ms  |  40.82ms  |  73.24ms  |
+|  rust  |    actix-web   |postgres[deadpool-postgres]|     None     |      13910.69     |   6.40ms  |   8.42ms  |  11.55ms  |  816.48ms |
+|  rust  |       axum      |postgres[deadpool-postgres]|     None     |      12746.7      |   6.74ms  |   7.91ms  |  12.32ms  |  57.32ms  |
+|   go   |       gin      |      postgres[pgx/v5]     |     None     |      3009.48      |  33.31ms  |  40.31ms  |  49.42ms  |  629.64ms |
+| python |aiohttp[gunicorn]|postgres[asyncpg]|     None     |      2528.21      |  38.72ms  |  39.62ms  |  40.82ms  |  73.24ms  |
+| python |      sanic     |     postgres[asyncpg]     |     None     |      2143.83      |  39.64ms  |  53.31ms  |  79.62ms  |  165.12ms |
 | python |      sanic      |  mysql |     None     |       1847.2      |  37.24ms  |  88.51ms  |  138.16ms |  233.31ms |
 | python | fastapi[uvicorn]|postgres|     None     |      1479.28      |  63.78ms  |  65.81ms  |  88.45ms  |  120.08ms |
 | python |aiohttp[gunicorn]|  mysql |     None     |      1383.66      |  55.94ms  |  99.25ms  |  144.84ms |  194.30ms |
@@ -110,9 +113,10 @@ Restore the database before each running webserver
 
 |language|  webserver_name |requests_per_second|latency_p50|latency_p75|latency_p90|latency_p99|
 |--------|-----------------|-------------------|-----------|-----------|-----------|-----------|
-|  rust  |    actix-web    |     133169.06     |  358.00us |  504.00us |  690.00us |   1.30ms  |
+|  rust  |      hyper     |     136822.92     |  351.00us |  419.00us |  635.00us |  766.00us |
 |  rust  |       axum      |     131915.03     |  556.00us |  683.00us |  733.00us |   1.12ms  |
-|  rust  |      hyper      |     126911.47     |  368.00us |  445.00us |  663.00us |  15.14ms  |
+|  rust  |    actix-web   |     117607.33     |  415.00us |  547.00us |  714.00us |   0.91ms  |
+|   go   |       gin      |      95761.19     |  521.00us |  726.00us |   1.00ms  |   1.80ms  |
 |  rust  |   hyper[sync]   |      25417.01     |  25.00us  |  31.00us  |  32.00us  |  52.00us  |
 | python |      sanic      |      23068.33     |   4.18ms  |   4.47ms  |   4.78ms  |   7.78ms  |
 | python |aiohttp[gunicorn]|      6875.18      |  15.03ms  |  15.53ms  |  16.05ms  |  19.81ms  |
@@ -124,8 +128,10 @@ Restore the database before each running webserver
 
 |language|  webserver_name |requests_per_second|latency_p50|latency_p75|latency_p90|latency_p99|
 |--------|-----------------|-------------------|-----------|-----------|-----------|-----------|
-|  rust  |    actix-web    |     132738.17     |  363.00us |  596.00us |  687.00us |   1.18ms  |
+|  rust  |      hyper     |     135382.94     |  356.00us |  436.00us |  659.00us |  791.00us |
 |  rust  |       axum      |     132577.75     |  693.00us |  731.00us |  775.00us |   1.07ms  |
+|  rust  |    actix-web   |      117406.9     |  415.00us |  551.00us |  715.00us |   0.92ms  |
+|   go   |       gin      |      30768.18     |   2.69ms  |  10.78ms  |  18.75ms  |  26.84ms  |
 |  rust  |      hyper      |      129449.2     |  363.00us |  468.00us |  679.00us |  28.33ms  |
 |  rust  |   hyper[sync]   |      24228.53     |  31.00us  |  32.00us  |  35.00us  |  52.00us  |
 | python |      sanic      |      21612.87     |   4.52ms  |   4.79ms  |   5.05ms  |   6.41ms  |

@@ -69,7 +69,7 @@ def database_name(config: dict, test_name: str) -> str:
     if test_name in STATELESS_TEST_NAMES:
         return None
     res = config["database"]
-    if config["db_client"]:
+    if config.get("db_client"):
         res += f"[{config['db_client']}]"
     return res
 
