@@ -24,6 +24,6 @@ db_client = "aiomysql"
 [run_options.mysql_alchemy]
 BUILD_COMMAND = "python3.11 -m venv venv && source ./venv/bin/activate && pip install -r requirements.txt"
 RUN_COMMAND = "PYTHONPATH=./web_servers/py_aiohttp DATABASE=mysql_alchemy ./web_servers/py_aiohttp/venv/bin/python ./web_servers/py_aiohttp/src/main.py  > /dev/null"
-database = "mysql[aiomysql]"
+database = "mysql"
 orm = "SQLAlchemy ORM"
 db_client = "aiomysql"
