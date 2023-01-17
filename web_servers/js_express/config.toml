@@ -1,0 +1,7 @@
+name = "express"
+language = "js"
+
+[run_options]
+[run_options.stateless]
+BUILD_COMMAND = "npm install express"
+RUN_COMMAND = "node web_servers/js_express/app.js  > /dev/null"

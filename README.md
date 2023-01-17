@@ -120,6 +120,7 @@ Restore the database before each running webserver
 |  rust  |   hyper[sync]   |      25417.01     |  25.00us  |  31.00us  |  32.00us  |  52.00us  |
 | python |      sanic      |      23068.33     |   4.18ms  |   4.47ms  |   4.78ms  |   7.78ms  |
 | python |aiohttp[gunicorn]|      6875.18      |  15.03ms  |  15.53ms  |  16.05ms  |  19.81ms  |
+|   js   |    express   |      6660.54      |  15.65ms  |  15.96ms  |  16.22ms  |  16.73ms  |
 | python | fastapi[uvicorn]|      3403.86      |  30.49ms  |  32.01ms  |  33.59ms  |  58.24ms  |
 | python |      django     |      1772.67      |  55.75ms  |  55.98ms  |  56.25ms  |  66.32ms  |
 | python |   django_asgi   |       537.54      |  170.85ms |  189.87ms |  218.62ms |  261.40ms |
@@ -131,11 +132,12 @@ Restore the database before each running webserver
 |  rust  |      hyper     |     135382.94     |  356.00us |  436.00us |  659.00us |  791.00us |
 |  rust  |       axum      |     132577.75     |  693.00us |  731.00us |  775.00us |   1.07ms  |
 |  rust  |    actix-web   |      117406.9     |  415.00us |  551.00us |  715.00us |   0.92ms  |
-|   go   |       gin      |      30768.18     |   2.69ms  |  10.78ms  |  18.75ms  |  26.84ms  |
 |  rust  |      hyper      |      129449.2     |  363.00us |  468.00us |  679.00us |  28.33ms  |
+|   go   |       gin      |      30768.18     |   2.69ms  |  10.78ms  |  18.75ms  |  26.84ms  |
 |  rust  |   hyper[sync]   |      24228.53     |  31.00us  |  32.00us  |  35.00us  |  52.00us  |
 | python |      sanic      |      21612.87     |   4.52ms  |   4.79ms  |   5.05ms  |   6.41ms  |
 | python |aiohttp[gunicorn]|      6561.11      |  15.60ms  |  16.36ms  |  17.86ms  |  21.59ms  |
+|   js   |    express   |      6547.23      |  15.89ms  |  16.20ms  |  16.45ms  |  16.96ms  |
 | python | fastapi[uvicorn]|      3319.11      |  31.32ms  |  32.99ms  |  34.96ms  |  60.82ms  |
 | python |      django     |      1759.76      |  56.15ms  |  56.43ms  |  56.75ms  |  60.71ms  |
 | python |   django_asgi   |       497.53      |  183.84ms |  208.93ms |  213.29ms |  229.48ms |

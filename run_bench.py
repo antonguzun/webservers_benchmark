@@ -66,7 +66,7 @@ def clean_db():
 
 
 def database_name(config: dict, test_name: str) -> str:
-    if test_name in STATELESS_TEST_NAMES:
+    if test_name in STATELESS_TEST_NAMES or not config.get("database"):
         return None
     res = config["database"]
     if config.get("db_client"):
