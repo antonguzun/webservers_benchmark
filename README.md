@@ -69,9 +69,9 @@ Restore the database before each running webserver
 
 |language|  webserver_name |database|      orm     |requests_per_second|latency_p50|latency_p75|latency_p90|latency_p99|
 |--------|-----------------|--------|--------------|-------------------|-----------|-----------|-----------|-----------|
-|   go   |       gin      |      postgres[pgx/v5]     |   None   |      57676.83     |   1.54ms  |   1.87ms  |   2.42ms  |   3.53ms  |
-|  rust  |    actix-web   |postgres[deadpool-postgres]|   None   |      39751.54     |   2.35ms  |   2.95ms  |   3.60ms  |   5.25ms  |
-|  rust  |       axum      |postgres[deadpool-postgres]|     None     |      19990.2      |   4.73ms  |   5.59ms  |   6.29ms  |  74.62ms  |
+|   go   |       gin      |      postgres[pgx/v5]     |   None   |      72588.99     |   1.28ms  |   1.41ms  |   1.70ms  |   2.16ms  |
+|  rust  |       axum      |postgres[deadpool-postgres]|     None     |      54529.62     |   1.75ms  |   2.05ms  |   2.34ms  |   2.93ms   |
+|  rust  |    actix-web   |postgres[deadpool-postgres]|   None   |      52911.32     |   1.80ms  |   2.13ms  |   2.48ms  |   3.29ms  |
 | python |      sanic      |postgres|     None     |      5210.99      |  18.92ms  |  19.47ms  |  20.27ms  |  37.29ms  |
 | python |      sanic      |  mysql |     None     |      3708.09      |  26.12ms  |  26.74ms  |  27.44ms  |  47.20ms  |
 | python |aiohttp[gunicorn]|postgres|     None     |      3008.69      |  32.31ms  |  60.09ms  |  111.95ms |  199.07ms |
@@ -91,8 +91,8 @@ Restore the database before each running webserver
 
 |language|  webserver_name |database|      orm     |requests_per_second|latency_p50|latency_p75|latency_p90|latency_p99|
 |--------|-----------------|--------|--------------|-------------------|-----------|-----------|-----------|-----------|
-|  rust  |    actix-web   |postgres[deadpool-postgres]|     None     |      13910.69     |   6.40ms  |   8.42ms  |  11.55ms  |  816.48ms |
-|  rust  |       axum      |postgres[deadpool-postgres]|     None     |      12746.7      |   6.74ms  |   7.91ms  |  12.32ms  |  57.32ms  |
+|  rust  |    actix-web   |postgres[deadpool-postgres]|     None     |      23159.61     |   3.67ms  |   5.18ms  |   6.93ms  |  11.85ms |
+|  rust  |       axum      |postgres[deadpool-postgres]|     None     |      19721.77     |   4.64ms  |   6.11ms  |   7.68ms  |  15.06ms  |
 |   go   |       gin      |      postgres[pgx/v5]     |     None     |      3009.48      |  33.31ms  |  40.31ms  |  49.42ms  |  629.64ms |
 | python |aiohttp[gunicorn]|postgres[asyncpg]|     None     |      2528.21      |  38.72ms  |  39.62ms  |  40.82ms  |  73.24ms  |
 | python |      sanic     |     postgres[asyncpg]     |     None     |      2143.83      |  39.64ms  |  53.31ms  |  79.62ms  |  165.12ms |
