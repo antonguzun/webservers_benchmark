@@ -3,7 +3,13 @@ language = "rust"
 
 [run_options]
 [run_options.postgres_raw]
-BUILD_COMMAND = "cargo build --release"
-RUN_COMMAND = "cargo run --manifest-path web_servers/rs_actixweb/Cargo.toml --release > /dev/null"
+BUILD_COMMAND = "cargo build --features 'db_posgres_client_deadpool' --release"
+RUN_COMMAND = "cargo run --manifest-path web_servers/rs_actixweb/Cargo.toml --features 'db_posgres_client_deadpool' --release > /dev/null"
 database = "postgres"
 db_client = "deadpool-postgres"
+
+[run_options.redis]
+BUILD_COMMAND = "cargo build --features 'db_redis' --release"
+RUN_COMMAND = "cargo run --manifest-path web_servers/rs_actixweb/Cargo.toml --features 'db_redis' --release > /dev/null"
+database = "redis"
+db_client = "multiplexed connection"

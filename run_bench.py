@@ -62,6 +62,7 @@ def clean_db():
     print("Clean DB")
     os.system("psql postgresql://postgres:pass@localhost:15432/webservers_bench < postgres_db.sql")
     os.system("mysql --user=user --password=pass --port=13306 --protocol=tcp webservers_bench < mysql_db.sql")
+    os.system("python redis_data_generator.py | redis-cli --pipe -p 26379")
     time.sleep(1)
 
 

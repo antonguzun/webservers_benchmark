@@ -1,14 +1,5 @@
 version: "3.3"
 services:
-  rabbitmq_for_webservers_bech:
-    image: rabbitmq:3.11.5-management
-    environment:
-      RABBITMQ_DEFAULT_USER: user
-      RABBITMQ_DEFAULT_PASS: pass
-      RABBITMQ_DEFAULT_VHOST: webservers_bench
-    ports:
-      - "15672:15672"
-      - "5672:5672"
   pg_for_bech:
     image: postgres:15.1
     environment:
@@ -27,3 +18,8 @@ services:
       MYSQL_DATABASE: webservers_bench
       MYSQL_USER: user
       MYSQL_PASSWORD: pass
+  redis_for_bech:
+    image: redis:7
+    restart: always
+    ports:
+      - "26379:6379"
