@@ -75,7 +75,7 @@ def database_name(config: dict, test_name: str) -> str:
     return res
 
 
-def check_service():
+def check_service(err):
     cnt = 5
     while cnt > 0:
         try:
@@ -83,7 +83,7 @@ def check_service():
             if ping_res.status == 200:
                 return
         except Exception:
-            pass
+            err.append("Service is not available")
         time.sleep(5)
         cnt -= 1
 
@@ -92,7 +92,7 @@ if __name__ == "__main__":
     print("Running benchmarks")
     finished = set()
     summary = BenchSummary(created_at=datetime.date.today(), results=[])
-
+    errors = []
     for web_server in web_servers_path.iterdir():
         try:
             with open(f"{web_server}/config.toml", "rb") as f:
@@ -110,7 +110,7 @@ if __name__ == "__main__":
                 print(f"started {web_server_process.pid}")
                 try:
                     for wrk_test in WRK_TESTS:
-                        check_service()
+                        check_service(errors)
                         if wrk_test['name'] in STATELESS_TEST_NAMES \
                             and f"{config['name']}_{wrk_test['name']}" in finished:
                             continue
@@ -132,21 +132,24 @@ if __name__ == "__main__":
                             summary.results.append(result)
                             finished.add(f"{config['name']}_{wrk_test['name']}")
                         except Exception as e:
-                            print(f"Failed to run {wrk_test['name']} test {e}")
+                            errors.append(f"Failed to run {wrk_test['name']} test {e}")
                 finally:
-                    print(f"terminate webserver {web_server_process.pid}")
+                    errors.append(f"terminate webserver {web_server_process.pid}")
                     p = psutil.Process(web_server_process.pid)
                     for child in p.children(recursive=True):
                         try:
                             child.kill()
-                        except Exception:
-                            pass
+                        except Exception as e:
+                            errors.append("Failed to kill child process: " + str(e))
                     p.kill()
                     time.sleep(5)
         except FileNotFoundError:
-            print(f"Skipping {web_server} as it doesn't have a config.toml file")
+            errors.append(f"Skipping {web_server} as it doesn't have a config.toml file")
             continue
 
     print("Done")
     with open(f"reports/{summary.created_at}.json", "w") as f:
         f.write(summary.json())
+    with open(f"reports/{summary.created_at}_error.txt", "w") as f:
+        for e in errors:
+            f.write(f"{e}\n")

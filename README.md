@@ -69,6 +69,7 @@ Restore the database before each running webserver
 
 |language|  webserver_name |database|      orm     |requests_per_second|latency_p50|latency_p75|latency_p90|latency_p99|
 |--------|-----------------|--------|--------------|-------------------|-----------|-----------|-----------|-----------|
+|  rust  |    actix-web   |redis[multiplexed connection]|   None   |     233006.06     |  289.00us |  411.00us |  458.00us |  523.00us |
 |   go   |       gin      |      postgres[pgx/v5]     |   None   |      72588.99     |   1.28ms  |   1.41ms  |   1.70ms  |   2.16ms  |
 |  rust  |       axum      |postgres[deadpool-postgres]|     None     |      54529.62     |   1.75ms  |   2.05ms  |   2.34ms  |   2.93ms   |
 |  rust  |    actix-web   |postgres[deadpool-postgres]|   None   |      52911.32     |   1.80ms  |   2.13ms  |   2.48ms  |   3.29ms  |
@@ -91,6 +92,7 @@ Restore the database before each running webserver
 
 |language|  webserver_name |database|      orm     |requests_per_second|latency_p50|latency_p75|latency_p90|latency_p99|
 |--------|-----------------|--------|--------------|-------------------|-----------|-----------|-----------|-----------|
+|  rust  |    actix-web   |redis[multiplexed connection]|     None     |     128130.46     |  540.00us |  719.00us |  801.00us |   0.91ms  |
 |  rust  |    actix-web   |postgres[deadpool-postgres]|     None     |      23159.61     |   3.67ms  |   5.18ms  |   6.93ms  |  11.85ms |
 |  rust  |       axum      |postgres[deadpool-postgres]|     None     |      19721.77     |   4.64ms  |   6.11ms  |   7.68ms  |  15.06ms  |
 |   go   |       gin      |      postgres[pgx/v5]     |     None     |      3009.48      |  33.31ms  |  40.31ms  |  49.42ms  |  629.64ms |
@@ -148,6 +150,8 @@ Restore the database before each running webserver
 - install wrk
 - install docker-compose
 - mariadb driver for mysql testcases (mariadb-devel)
+- psql for postgres testcases
+- redis-cli for redis testcases
 - run deps
 ```
 docker-compose up -d
