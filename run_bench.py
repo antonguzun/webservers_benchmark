@@ -10,13 +10,20 @@ import tomllib
 import requests
 
 web_servers_path = Path("web_servers")
+NUMBER_OF_CONCURRENT_CLIENTS = 100
+TEST_LENGHT_IN_SEC = 5
+WEBSERVER_ADDRES = "http://127.0.0.1:8000/"
 
 
-WRK_COMMAND = "wrk -t2 -c100 -d60s --latency -s ./wrk_scripts/{script_name} http://127.0.0.1:8000/"
-GET_USER_BENCH = dict(name="get user", wrk_command=WRK_COMMAND.format(script_name="get_user_by_pk.lua"))
-UPDATE_USER_BENCH = dict(name="update user", wrk_command=WRK_COMMAND.format(script_name="update_user.lua"))
-PLAIN_TEXT_BENCH = dict(name="plain", wrk_command=WRK_COMMAND.format(script_name="plain.lua"))
-TO_JSON_BENCH = dict(name="to json", wrk_command=WRK_COMMAND.format(script_name="to_json.lua"))
+
+def create_wrk_command(script_name: str) -> str:
+    return f"wrk -t2 -c{NUMBER_OF_CONCURRENT_CLIENTS} -d{TEST_LENGHT_IN_SEC}s --latency -s ./wrk_scripts/{script_name} {WEBSERVER_ADDRES}"
+
+
+GET_USER_BENCH = dict(name="get user", wrk_command=create_wrk_command(script_name="get_user_by_pk.lua"))
+UPDATE_USER_BENCH = dict(name="update user", wrk_command=create_wrk_command(script_name="update_user.lua"))
+PLAIN_TEXT_BENCH = dict(name="plain", wrk_command=create_wrk_command(script_name="plain.lua"))
+TO_JSON_BENCH = dict(name="to json", wrk_command=create_wrk_command(script_name="to_json.lua"))
 WRK_TESTS = [GET_USER_BENCH, UPDATE_USER_BENCH, TO_JSON_BENCH, PLAIN_TEXT_BENCH]
 STATELESS_TEST_NAMES = [TO_JSON_BENCH["name"], PLAIN_TEXT_BENCH["name"]]
 
@@ -98,6 +105,8 @@ if __name__ == "__main__":
             with open(f"{web_server}/config.toml", "rb") as f:
                 config = tomllib.load(f)
             for run_setup_name, run_option in config["run_options"].items():
+                # if config['language'] != 'js':
+                #     continue
                 print(f"Running benchmarks for {config['name']} {run_setup_name}")
                 print(f"Build {config['name']}")
                 os.system(f"cd {web_server} && {run_option['BUILD_COMMAND']}")
