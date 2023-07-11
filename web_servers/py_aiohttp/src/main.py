@@ -1,11 +1,15 @@
 import ujson
 import logging
 
+import asyncio
 import uvloop
 from aiohttp.web import Application, Request, Response, run_app
 from src.db import db_module, entities
 
 logger = logging.getLogger("aiohttp")
+
+
+asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 
 async def get_user(request: Request):
@@ -85,5 +89,4 @@ async def app():
 
 
 if __name__ == "__main__":
-    uvloop.install()
     run_app(app(), port=8000)

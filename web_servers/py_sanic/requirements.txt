@@ -1,8 +1,7 @@
-sanic==22.12.0
+sanic==23.03.0
 uvloop==0.17.0
-pydantic==1.10.4
-sqlalchemy[asyncio]==2.0.0b3
-asyncpg==0.27.0
-psycopg2-binary==2.9.5
-aiomysql==0.1.1
-tortoise-orm==0.19.2
+pydantic==2.0.2
+sqlalchemy[asyncio]==2.0.18
+asyncpg==0.28.0
+psycopg2-binary==2.9.6
+aiomysql==0.2.0
