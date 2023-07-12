@@ -8,3 +8,4 @@
 **/target/*
 # go binaries
 **/main
+web_servers/js_express/node_modules

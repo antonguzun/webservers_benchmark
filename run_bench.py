@@ -11,7 +11,7 @@ import requests
 
 web_servers_path = Path("web_servers")
 NUMBER_OF_CONCURRENT_CLIENTS = 100
-TEST_LENGHT_IN_SEC = 5
+TEST_LENGHT_IN_SEC = 60
 WEBSERVER_ADDRES = "http://127.0.0.1:8000/"
 
 
@@ -83,7 +83,7 @@ def database_name(config: dict, test_name: str) -> str:
 
 
 def check_service(err):
-    cnt = 5
+    cnt = 300
     while cnt > 0:
         try:
             ping_res = requests.get("localhost:8000/ping/")
@@ -91,7 +91,7 @@ def check_service(err):
                 return
         except Exception:
             err.append("Service is not available")
-        time.sleep(5)
+        time.sleep(0.1)
         cnt -= 1
 
 
@@ -105,7 +105,12 @@ if __name__ == "__main__":
             with open(f"{web_server}/config.toml", "rb") as f:
                 config = tomllib.load(f)
             for run_setup_name, run_option in config["run_options"].items():
-                # if config['language'] != 'js':
+                # if config['language'] != 'go':
+                #     continue
+                # if not 'actix' in config['name']:
+                #     continue
+                # fast test
+                # if len(finished) == 2:
                 #     continue
                 print(f"Running benchmarks for {config['name']} {run_setup_name}")
                 print(f"Build {config['name']}")
