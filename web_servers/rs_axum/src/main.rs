@@ -36,7 +36,7 @@ pub async fn update_user_handler(
     Json(payload): Json<UserUpdateScheme>,
     state: Arc<AppState>,
 ) -> impl IntoResponse {
-    let username = payload.username.to_string();
+    let username = payload.username.to_owned();
     let email = payload.email.to_string();
     let user_access_model = UserRepo::new(&state.resources.db_pool);
     let user = user_updater::update_user(&user_access_model, username, email, user_id)

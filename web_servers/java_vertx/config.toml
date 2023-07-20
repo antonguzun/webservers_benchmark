@@ -1,0 +1,29 @@
+name = "vertx"
+language = "java"
+
+[run_options]
+[run_options.postgres_raw]
+BUILD_COMMAND = "echo 'skip'"
+# RUN_COMMAND = "DATABASE=postgres_raw ./web_servers/java_vertx/mvnw clean compile exec:java  > /dev/null"
+RUN_COMMAND = "DATABASE=postgres_raw cd web_servers/java_vertx && ./mvnw clean compile exec:java  > /dev/null"
+database = "postgres"
+
+# [run_options.postgres_alchemy]
+# BUILD_COMMAND = "python3.11 -m venv venv && source ./venv/bin/activate && pip install -r requirements.txt"
+# RUN_COMMAND = "PYTHONPATH=./web_servers/py_sanic DATABASE=postgres_alchemy ./web_servers/py_sanic/venv/bin/sanic --factory src.main:create_app --host=localhost --port=8000 --single-process  > /dev/null"
+# database = "postgres"
+# orm = "SQLAlchemy ORM"
+# db_client = "asyncpg"
+
+# [run_options.mysql_raw]
+# BUILD_COMMAND = "python3.11 -m venv venv && source ./venv/bin/activate && pip install -r requirements.txt"
+# RUN_COMMAND = "PYTHONPATH=./web_servers/py_sanic DATABASE=mysql_raw ./web_servers/py_sanic/venv/bin/sanic --factory src.main:create_app --host=localhost --port=8000 --single-process  > /dev/null"
+# database = "mysql"
+# db_client = "aiomysql"
+
+# [run_options.mysql_alchemy]
+# BUILD_COMMAND = "python3.11 -m venv venv && source ./venv/bin/activate && pip install -r requirements.txt"
+# RUN_COMMAND = "PYTHONPATH=./web_servers/py_sanic DATABASE=mysql_alchemy ./web_servers/py_sanic/venv/bin/sanic --factory src.main:create_app --host=localhost --port=8000 --single-process  > /dev/null"
+# database = "mysql"
+# orm = "SQLAlchemy ORM"
+# db_client = "aiomysql"
