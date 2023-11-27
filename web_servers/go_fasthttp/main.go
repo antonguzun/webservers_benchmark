@@ -61,7 +61,7 @@ type UserUpdate struct {
 	Email    string `json:"email"`
 }
 
-func create_pool() (*pgxpool.Pool, error) {
+func createPool() (*pgxpool.Pool, error) {
 	return pgxpool.New(context.Background(), "postgresql://postgres:pass@localhost:15432/webservers_bench")
 }
 
@@ -88,30 +88,51 @@ func Auth(requestHandler fasthttp.RequestHandler) fasthttp.RequestHandler {
 func main() {
 	r := router.New()
 
-	db, err := create_pool()
+	db, err := createPool()
 	if err != nil {
 		log.Fatal(err)
 	}
 	handler := NewHandler(db)
 
-	r.GET("/ping/", ping_handler)
-	r.GET("/plain/", Auth(plain_handler))
-	r.GET("/to_json/", Auth(to_json_handler))
+	r.GET("/ping/", pingHandler)
+	r.GET("/plain/", Auth(plainHandler))
+	r.GET("/to_json/", Auth(toJsonHandler))
 	r.GET("/user/{user_id}/", Auth(handler.getUserHandler))
-	r.PATCH("/user/{user_id}/", Auth(handler.update_user_handler))
+	r.PATCH("/user/{user_id}/", Auth(handler.updateUserHandler))
 
 	log.Println("Server is starting...")
 
 	fasthttp.ListenAndServe(":8000", r.Handler)
 }
 
+func dumpData(c *fasthttp.RequestCtx, data interface{}) {
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		c.Error("Error encoding JSON", fasthttp.StatusInternalServerError)
+		return
+	}
+
+	c.SetContentType("application/json")
+	c.Response.SetStatusCode(fasthttp.StatusOK)
+	c.Write(jsonData)
+}
+
+func parseUserID(c *fasthttp.RequestCtx) (int, error) {
+	user_id_raw := c.UserValue("user_id")
+	user_id, err := strconv.Atoi(fmt.Sprintf("%v", user_id_raw))
+	if err != nil {
+		return 0, err
+	}
+	return user_id, nil
+}
+
 func (h *Handler) getUserHandler(c *fasthttp.RequestCtx) {
-	user_id := c.UserValue("user_id")
-	user_id, err := strconv.Atoi(fmt.Sprintf("%v", user_id))
+	user_id, err := parseUserID(c)
 	if err != nil {
 		c.Error("User Not Found", 404)
 		return
 	}
+
 	var user User
 	var row = h.db.QueryRow(context.Background(), "SELECT user_id, username, email, is_archived, created_at FROM users WHERE user_id=$1", user_id)
 
@@ -121,19 +142,11 @@ func (h *Handler) getUserHandler(c *fasthttp.RequestCtx) {
 		return
 	}
 
-	jsonData, err := json.Marshal(user)
-	if err != nil {
-		c.Error("Error encoding JSON", fasthttp.StatusInternalServerError)
-		return
-	}
-
-	c.SetContentType("application/json")
-	c.Write(jsonData)
+	dumpData(c, user)
 }
 
-func (h *Handler) update_user_handler(c *fasthttp.RequestCtx) {
-	user_id := c.UserValue("user_id")
-	user_id, err := strconv.Atoi(fmt.Sprintf("%v", user_id))
+func (h *Handler) updateUserHandler(c *fasthttp.RequestCtx) {
+	user_id, err := parseUserID(c)
 	if err != nil {
 		c.Error("User Not Found", 404)
 		return
@@ -160,21 +173,14 @@ func (h *Handler) update_user_handler(c *fasthttp.RequestCtx) {
 		c.Error("Internal Server Error", fasthttp.StatusInternalServerError)
 		return
 	}
-	jsonData, err := json.Marshal(user)
-	if err != nil {
-		c.Error("Error encoding JSON", fasthttp.StatusInternalServerError)
-		return
-	}
-
-	c.SetContentType("application/json")
-	c.Write(jsonData)
+	dumpData(c, user)
 }
 
-func ping_handler(c *fasthttp.RequestCtx) {
+func pingHandler(c *fasthttp.RequestCtx) {
 	c.SetBodyString("pong")
 }
 
-func parse_params(c *fasthttp.RequestCtx) Query {
+func parseParams(c *fasthttp.RequestCtx) Query {
 	params := c.QueryArgs()
 	param1 := params.Peek("param1")
 	param2 := params.Peek("param2")
@@ -183,22 +189,15 @@ func parse_params(c *fasthttp.RequestCtx) Query {
 	return Query{string(param1), string(param2), string(param3)}
 }
 
-func plain_handler(c *fasthttp.RequestCtx) {
-	query := parse_params(c)
+func plainHandler(c *fasthttp.RequestCtx) {
+	query := parseParams(c)
 
 	res := fmt.Sprintf("param1=%s; param2=%s, param3=%s", query.param1, query.param2, query.param3)
 	c.SetBodyString(res)
 }
 
-func to_json_handler(c *fasthttp.RequestCtx) {
-	query := parse_params(c)
+func toJsonHandler(c *fasthttp.RequestCtx) {
+	query := parseParams(c)
 
-	jsonData, err := json.Marshal(query)
-	if err != nil {
-		c.Error("Error encoding JSON", fasthttp.StatusInternalServerError)
-		return
-	}
-
-	c.SetContentType("application/json")
-	c.Write(jsonData)
+	dumpData(c, query)
 }
