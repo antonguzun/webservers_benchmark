@@ -112,7 +112,7 @@ def check_service(logger):
     start_at = datetime.datetime.now()
     while cnt > 0:
         try:
-            ping_res = requests.get("http://localhost:8000/ping/")
+            ping_res = requests.get(f"{WEBSERVER_ADDRES}ping/")
             if ping_res.status_code == 200:
 
                 # finish_at = datetime.datetime.now()
@@ -152,8 +152,8 @@ if __name__ == "__main__":
 
                 # if config["language"] != "java":
                 #     continue
-                if config["name"] not in ("gin", "fasthttp"):
-                    continue
+                # if config["name"] not in ("gin1", "fasthttp1", "aiohttp"):
+                #     continue
                 # fast test
                 # if len(finished) == 2:
                 #     continue

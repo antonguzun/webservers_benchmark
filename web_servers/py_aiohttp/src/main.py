@@ -70,7 +70,7 @@ async def on_cleanup(app):
 
 def register_routers(app):
 
-    app.router.add_get("/ping", ping)
+    app.router.add_get("/ping/", ping)
     app.router.add_get("/plain/", plain)
     app.router.add_get("/to_json/", to_json)
     app.router.add_get("/user/{user_id}/", get_user)
