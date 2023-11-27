@@ -15,45 +15,17 @@ import (
 )
 
 type Query struct {
-	param1 string
-	param2 string
-	param3 string
-}
-
-func (u Query) MarshalJSON() ([]byte, error) {
-	return json.Marshal(&struct {
-		Param1 string `json:"param1"`
-		Param2 string `json:"param2"`
-		Param3 string `json:"param3"`
-	}{
-		Param1: u.param1,
-		Param2: u.param2,
-		Param3: u.param3,
-	})
+	Param1 string `json:"param1"`
+	Param2 string `json:"param2"`
+	Param3 string `json:"param3"`
 }
 
 type User struct {
-	user_id     int32
-	username    string
-	email       string
-	is_archived bool
-	created_at  time.Time
-}
-
-func (u User) MarshalJSON() ([]byte, error) {
-	return json.Marshal(&struct {
-		User_id     int32     `json:"user_id"`
-		Username    string    `json:"username"`
-		Email       string    `json:"email"`
-		Is_archived bool      `json:"is_archived"`
-		Created_at  time.Time `json:"created_at"`
-	}{
-		User_id:     u.user_id,
-		Username:    u.username,
-		Email:       u.email,
-		Is_archived: u.is_archived,
-		Created_at:  u.created_at,
-	})
+	UserID     int32     `json:"user_id"`
+	Username   string    `json:"username"`
+	Email      string    `json:"email"`
+	IsArchived bool      `json:"is_archived"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 type UserUpdate struct {
@@ -136,7 +108,7 @@ func (h *Handler) getUserHandler(c *fasthttp.RequestCtx) {
 	var user User
 	var row = h.db.QueryRow(context.Background(), "SELECT user_id, username, email, is_archived, created_at FROM users WHERE user_id=$1", user_id)
 
-	if err := pgxscan.NewScanner(row).Scan(&user.user_id, &user.username, &user.email, &user.is_archived, &user.created_at); err != nil {
+	if err := pgxscan.NewScanner(row).Scan(&user.UserID, &user.Username, &user.Email, &user.IsArchived, &user.CreatedAt); err != nil {
 		log.Println(err)
 		c.Error("Internal Server Error", fasthttp.StatusInternalServerError)
 		return
@@ -168,7 +140,7 @@ func (h *Handler) updateUserHandler(c *fasthttp.RequestCtx) {
 	var user User
 	var row = h.db.QueryRow(context.Background(), "UPDATE users  SET username=$2, email=$3, updated_at=NOW() WHERE user_id=$1  RETURNING user_id, username, email, is_archived, created_at", user_id, update_data.Username, update_data.Email)
 
-	if err := pgxscan.NewScanner(row).Scan(&user.user_id, &user.username, &user.email, &user.is_archived, &user.created_at); err != nil {
+	if err := pgxscan.NewScanner(row).Scan(&user.UserID, &user.Username, &user.Email, &user.IsArchived, &user.CreatedAt); err != nil {
 		log.Println(err)
 		c.Error("Internal Server Error", fasthttp.StatusInternalServerError)
 		return
@@ -192,7 +164,7 @@ func parseParams(c *fasthttp.RequestCtx) Query {
 func plainHandler(c *fasthttp.RequestCtx) {
 	query := parseParams(c)
 
-	res := fmt.Sprintf("param1=%s; param2=%s, param3=%s", query.param1, query.param2, query.param3)
+	res := fmt.Sprintf("param1=%s; param2=%s, param3=%s", query.Param1, query.Param2, query.Param3)
 	c.SetBodyString(res)
 }
 
