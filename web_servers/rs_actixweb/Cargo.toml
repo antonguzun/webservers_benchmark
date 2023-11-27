@@ -16,7 +16,7 @@ deadpool-postgres = { version = "0.11"}
 tokio-postgres = { version = "^0.7.7", features = ["with-chrono-0_4", "with-time-0_2"]}
 sql-builder = {version="3.1.1"}
 # db redis
-redis = { version = "0.23.4", features = ["tokio-comp", "aio", "connection-manager"]}
+redis = { version = "0.23.3", features = ["tokio-comp", "aio", "connection-manager"]}
 # web
 actix-web = "4.2"
 actix-http = "3.2.2"
