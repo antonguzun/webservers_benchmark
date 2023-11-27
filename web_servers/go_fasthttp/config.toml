@@ -1,0 +1,9 @@
+name = "fasthttp"
+language = "go"
+
+[run_options]
+[run_options.postgres_raw]
+BUILD_COMMAND = "go build main.go"
+RUN_COMMAND = "cd ./web_servers/go_fasthttp/ && go run main.go > /dev/null"
+database = "postgres"
+db_client = "pgx/v5"

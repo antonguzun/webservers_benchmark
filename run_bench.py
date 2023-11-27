@@ -150,10 +150,10 @@ if __name__ == "__main__":
                 webserver_repr = f"{config['name']}-{database_name(run_option, None)}"
                 webserver_logger = logger.bind(webserver=webserver_repr)
 
-                if config["language"] != "java":
-                    continue
-                # if not "sanic" in config["name"]:
+                # if config["language"] != "java":
                 #     continue
+                if config["name"] not in ("gin", "fasthttp"):
+                    continue
                 # fast test
                 # if len(finished) == 2:
                 #     continue
