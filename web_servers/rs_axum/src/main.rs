@@ -1,6 +1,6 @@
 use axum::{
-    extract::{Path, Query, State},
-    http::{self, Request, StatusCode},
+    extract::{Path, Query, Request, State},
+    http::{self, StatusCode},
     middleware::{self, Next},
     response::{IntoResponse, Response},
     routing::{get, patch},
@@ -9,7 +9,6 @@ use axum::{
 use http::header::HeaderValue;
 use serde::{Deserialize, Serialize};
 
-use std::net::SocketAddr;
 use std::sync::Arc;
 
 use bench::common::{Config, Resources};
@@ -73,7 +72,7 @@ pub struct AppState {
     pub resources: Resources,
 }
 
-async fn auth<B>(req: Request<B>, next: Next<B>) -> Result<Response, StatusCode> {
+async fn auth(req: Request, next: Next) -> Result<Response, StatusCode> {
     if req.headers().get("token") == Some(&HeaderValue::from_str("hardcoded_token").unwrap()) {
         Ok(next.run(req).await)
     } else {
@@ -81,15 +80,14 @@ async fn auth<B>(req: Request<B>, next: Next<B>) -> Result<Response, StatusCode>
     }
 }
 
-
 #[tokio::main]
 async fn main() {
     let config = Config::create_config();
     let resources = Resources::create_resources(&config).await;
 
     let shared_state = Arc::new(AppState { config, resources });
-    let app = Router::new()
-        .route("/ping/", get(ping_handler))
+
+    let private_api = Router::new()
         .route("/plain/", get(plain_handler))
         .route("/to_json/", get(to_json_handler))
         .route("/user/:user_id/", get(get_user_by_id))
@@ -100,12 +98,16 @@ async fn main() {
                 move |path, json| update_user_handler(path, json, shared_state)
             }),
         )
-        .with_state(shared_state)
         .route_layer(middleware::from_fn(auth));
+    let app = Router::new()
+        .route("/ping/", get(ping_handler))
+        .nest("/", private_api)
+        .with_state(shared_state);
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 8000));
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:8000")
+        .await
+        .unwrap();
+    axum::serve(listener, app.into_make_service())
         .await
         .unwrap();
 }
