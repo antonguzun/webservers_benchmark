@@ -32,7 +32,6 @@ func main() {
 		repo, err = mysql.CreateMysqlUserRepo()
 	} else if database_type == "redis" {
 		repo, err = redis.CreateRedisUserRepo()
-
 	} else {
 		repo = nil
 		err = errors.New("DATABASE env is not set properly")
@@ -49,7 +48,7 @@ func main() {
 	r.GET("/user/{user_id}/", api.Auth(handler.GetUserHandler))
 	r.PATCH("/user/{user_id}/", api.Auth(handler.UpdateUserHandler))
 
-	log.Println("Server is starting...")
+	log.Println("Fasthttp server is starting...")
 
 	fasthttp.ListenAndServe(":8000", r.Handler)
 }

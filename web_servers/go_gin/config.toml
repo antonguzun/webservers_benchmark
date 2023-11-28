@@ -4,6 +4,19 @@ language = "go"
 [run_options]
 [run_options.postgres_raw]
 BUILD_COMMAND = "GIN_MODE=release go build main.go"
-RUN_COMMAND = "cd ./web_servers/go_gin/ && GIN_MODE=release go run main.go > /dev/null"
+RUN_COMMAND = "cd ./web_servers/go_gin/ && GIN_MODE=release DATABASE=postgres_raw go run main.go > /dev/null"
 database = "postgres"
 db_client = "pgx/v5"
+
+[run_options.mysql_raw]
+BUILD_COMMAND = "GIN_MODE=release go build main.go"
+RUN_COMMAND = "cd ./web_servers/go_gin/ && GIN_MODE=release DATABASE=mysql_raw go run main.go > /dev/null"
+database = "mysql"
+db_client = "go-sql-driver"
+
+
+[run_options.redis]
+BUILD_COMMAND = "GIN_MODE=release go build main.go"
+RUN_COMMAND = "cd ./web_servers/go_gin/ && GIN_MODE=release DATABASE=redis go run main.go > /dev/null"
+database = "mysql"
+db_client = "go-redis"
