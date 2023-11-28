@@ -20,11 +20,11 @@ func DumpData(c *fasthttp.RequestCtx, data interface{}) {
 	c.Write(jsonData)
 }
 
-func ParseUserID(c *fasthttp.RequestCtx) (int, error) {
+func ParseUserID(c *fasthttp.RequestCtx) (*int, error) {
 	user_id_raw := c.UserValue("user_id")
 	user_id, err := strconv.Atoi(fmt.Sprintf("%v", user_id_raw))
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return user_id, nil
+	return &user_id, nil
 }

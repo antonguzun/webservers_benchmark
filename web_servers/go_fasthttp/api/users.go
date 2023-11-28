@@ -7,16 +7,15 @@ import (
 	"go_fasthttp/api/utils"
 	"go_fasthttp/storage"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/valyala/fasthttp"
 )
 
 type Handler struct {
-	DB *pgxpool.Pool
+	repo storage.UserRepo
 }
 
-func NewHandler(db *pgxpool.Pool) *Handler {
-	return &Handler{DB: db}
+func NewHandler(userRepo storage.UserRepo) *Handler {
+	return &Handler{repo: userRepo}
 }
 
 func (h *Handler) GetUserHandler(c *fasthttp.RequestCtx) {
@@ -26,9 +25,9 @@ func (h *Handler) GetUserHandler(c *fasthttp.RequestCtx) {
 		return
 	}
 
-	user, err := storage.GetUserById(h.DB, user_id)
+	user, err := h.repo.GetUserById(*user_id)
 	if err != nil {
-		log.Println(err)
+		log.Println("get user error", err)
 		c.Error("Internal Server Error", fasthttp.StatusInternalServerError)
 		return
 	}
@@ -56,10 +55,11 @@ func (h *Handler) UpdateUserHandler(c *fasthttp.RequestCtx) {
 		return
 	}
 
-	user, err := storage.UpdateUser(h.DB, user_id, userUpdate)
+	user, err := h.repo.UpdateUser(*user_id, userUpdate)
 
 	if err != nil {
 		log.Println(err)
+		log.Println("update user error", err)
 		c.Error("Internal Server Error", fasthttp.StatusInternalServerError)
 		return
 	}
