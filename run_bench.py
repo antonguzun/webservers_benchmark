@@ -12,10 +12,10 @@ from loguru import logger
 
 TODAY = datetime.date.today()
 LOG_FILE = f"./logs/{TODAY}.log"
-LOGGING_FORMAT = format = "{time:HH:mm:ss} {extra[webserver]} {message}"
+LOGGING_FORMAT = format = "{time:HH:mm:ss} {message}"
 
 NUMBER_OF_CONCURRENT_CLIENTS = 100
-TEST_LENGHT_IN_SEC = 5
+TEST_LENGHT_IN_SEC = 60
 WEBSERVER_ADDRESS = "http://127.0.0.1:8000"
 
 
@@ -48,6 +48,7 @@ STATELESS_TEST_NAMES = [TO_JSON_BENCH.name, PLAIN_TEXT_BENCH.name]
 class BenchResult(pydantic.BaseModel):
     test_name: str
     webserver_name: str
+    source: str
     language: str
     database: str | None
     orm: str | None
@@ -67,6 +68,7 @@ class BenchResult(pydantic.BaseModel):
         database: str | None,
         orm: str | None,
         output: str,
+        source: str,
     ) -> "BenchResult":
         data = output.splitlines()
         return cls(
@@ -80,6 +82,7 @@ class BenchResult(pydantic.BaseModel):
             latency_p75=data[7].split()[1],
             latency_p90=data[8].split()[1],
             latency_p99=data[9].split()[1],
+            source=source,
         )
 
 
@@ -111,21 +114,27 @@ class WebServerConfig(pydantic.BaseModel):
 
 class WebServer:
     def __init__(
-        self, config: WebServerConfig, run_option: RunOption, path: Path, log
+        self,
+        config: WebServerConfig,
+        run_option: RunOption,
+        path: Path,
+        log,
+        source: str,
     ) -> None:
         self.config = config
         self.run_option = run_option
         self.path = path
         self.log = log
         self._server_process: psutil.Popen | None = None
+        self.source = source
 
     @classmethod
     def build_and_run(
-        cls, config: WebServerConfig, run_option: RunOption, path: Path, log
+        cls, config: WebServerConfig, run_option: RunOption, path: Path, log, source: str
     ) -> "WebServer":
         log.debug(f"Build {config.name}")
         os.system(f"cd {path} && {run_option.BUILD_COMMAND}")
-        ws = WebServer(config, run_option, path, logger)
+        ws = WebServer(config, run_option, path, logger, source)
         log.debug(f"Start webserver {config.name} in subprocess")
         proc = subprocess.Popen(
             [run_option.RUN_COMMAND], shell=True, stdout=subprocess.PIPE
@@ -148,6 +157,7 @@ class WebServer:
             if scenario.name not in STATELESS_TEST_NAMES
             else None,
             output=process.stdout.decode("utf-8"),
+            source=self.source,
         )
 
     def finish(self):
@@ -217,22 +227,27 @@ if __name__ == "__main__":
     log = logger.bind(webserver="root")
     log.info("Running benchmarks")
 
+    sha_commit = subprocess.run(
+        "git rev-parse --short HEAD", shell=True, stdout=subprocess.PIPE
+    ).stdout.decode("utf-8").strip()
+
     summary = BenchSummary(created_at=TODAY, results=[])
     errors = []
     for web_server_path in Path("web_servers").iterdir():
         try:
+            source = f"https://github.com/antonguzun/webservers_benchmark/blob/{sha_commit}/{web_server_path}/config.toml"
             config = load_webserver(web_server_path, log)
 
             finished = set()
             for run_setup_name, run_option in config.run_options.items():
-                if config.name not in ("gin1", "fasthttp1", "hyper"):
+                if config.name in ("hyper[sync]",):
                     continue
 
                 log.debug(f"Running benchmarks for {config.name} {run_setup_name}")
                 clean_db(log)
 
                 web_server = WebServer.build_and_run(
-                    config, run_option, web_server_path, log
+                    config, run_option, web_server_path, log, source
                 )
 
                 try:
