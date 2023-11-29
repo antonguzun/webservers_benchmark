@@ -5,10 +5,14 @@ use actix_web::dev::Server;
 use actix_web::guard::{Guard, GuardContext};
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 
+#[cfg(feature = "db_mysql")] // TODO!(fix)
+use bench::common::mysql::{Config, Resources};
 #[cfg(feature = "db_posgres_client_deadpool")]
 use bench::common::postgres::{Config, Resources};
 #[cfg(feature = "db_redis")] // TODO!(fix)
 use bench::common::redis::{Config, Resources};
+#[cfg(feature = "db_mysql")] // TODO!(fix)
+use bench::storage::mysql::user_repo::UserRepo;
 #[cfg(feature = "db_posgres_client_deadpool")]
 use bench::storage::postgres::user_repo::UserRepo;
 #[cfg(feature = "db_redis")] // TODO!(fix)

@@ -26,7 +26,7 @@ func PlainHandler(c *gin.Context) {
 		return
 	}
 
-	res := fmt.Sprintf("param1=%s; param2=%s, param3=%s", query.Param1, query.Param2, query.Param3)
+	res := fmt.Sprintf("param1=%s, param2=%s, param3=%s", query.Param1, query.Param2, query.Param3)
 	c.String(http.StatusOK, res)
 }
 

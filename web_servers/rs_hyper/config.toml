@@ -6,4 +6,4 @@ language = "rust"
 BUILD_COMMAND = "cargo build --release"
 RUN_COMMAND = "cargo run --manifest-path web_servers/rs_hyper/Cargo.toml --release > /dev/null"
 database = "postgres"
-orm = false
+

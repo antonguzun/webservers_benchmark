@@ -1,7 +1,6 @@
 import datetime
 import os
 import subprocess
-import sys
 import time
 from pathlib import Path
 
@@ -11,30 +10,39 @@ import requests
 import tomllib
 from loguru import logger
 
-web_servers_path = Path("web_servers")
+TODAY = datetime.date.today()
+LOG_FILE = f"./logs/{TODAY}.log"
+LOGGING_FORMAT = format = "{time:HH:mm:ss} {extra[webserver]} {message}"
+
 NUMBER_OF_CONCURRENT_CLIENTS = 100
 TEST_LENGHT_IN_SEC = 5
-WEBSERVER_ADDRES = "http://127.0.0.1:8000/"
+WEBSERVER_ADDRESS = "http://127.0.0.1:8000"
 
 
 def create_wrk_command(script_name: str) -> str:
-    return f"wrk -t2 -c{NUMBER_OF_CONCURRENT_CLIENTS} -d{TEST_LENGHT_IN_SEC}s --latency -s ./wrk_scripts/{script_name} {WEBSERVER_ADDRES}"
+    return f"wrk -t2 -c{NUMBER_OF_CONCURRENT_CLIENTS} -d{TEST_LENGHT_IN_SEC}s --latency -s ./wrk_scripts/{script_name} {WEBSERVER_ADDRESS}"
 
 
-GET_USER_BENCH = dict(
+class Scenario(pydantic.BaseModel):
+    name: str
+    wrk_command: str
+
+
+GET_USER_BENCH = Scenario(
     name="get user", wrk_command=create_wrk_command(script_name="get_user_by_pk.lua")
 )
-UPDATE_USER_BENCH = dict(
+UPDATE_USER_BENCH = Scenario(
     name="update user", wrk_command=create_wrk_command(script_name="update_user.lua")
 )
-PLAIN_TEXT_BENCH = dict(
+PLAIN_TEXT_BENCH = Scenario(
     name="plain", wrk_command=create_wrk_command(script_name="plain.lua")
 )
-TO_JSON_BENCH = dict(
+TO_JSON_BENCH = Scenario(
     name="to json", wrk_command=create_wrk_command(script_name="to_json.lua")
 )
+
 WRK_TESTS = [GET_USER_BENCH, UPDATE_USER_BENCH, TO_JSON_BENCH, PLAIN_TEXT_BENCH]
-STATELESS_TEST_NAMES = [TO_JSON_BENCH["name"], PLAIN_TEXT_BENCH["name"]]
+STATELESS_TEST_NAMES = [TO_JSON_BENCH.name, PLAIN_TEXT_BENCH.name]
 
 
 class BenchResult(pydantic.BaseModel):
@@ -56,7 +64,7 @@ class BenchResult(pydantic.BaseModel):
         webserver_name: str,
         test_name: str,
         language: str,
-        database: str,
+        database: str | None,
         orm: str | None,
         output: str,
     ) -> "BenchResult":
@@ -87,7 +95,77 @@ def log_subprocess_output(pipe, logger):
         print("got line from subprocess: %r", line)
 
 
-def clean_db():
+class RunOption(pydantic.BaseModel):
+    BUILD_COMMAND: str
+    RUN_COMMAND: str
+    orm: str | None = None
+    database: str | None = None
+    db_client: str | None = None
+
+
+class WebServerConfig(pydantic.BaseModel):
+    name: str
+    language: str
+    run_options: dict[str, RunOption]
+
+
+class WebServer:
+    def __init__(
+        self, config: WebServerConfig, run_option: RunOption, path: Path, log
+    ) -> None:
+        self.config = config
+        self.run_option = run_option
+        self.path = path
+        self.log = log
+        self._server_process: psutil.Popen | None = None
+
+    @classmethod
+    def build_and_run(
+        cls, config: WebServerConfig, run_option: RunOption, path: Path, log
+    ) -> "WebServer":
+        log.debug(f"Build {config.name}")
+        os.system(f"cd {path} && {run_option.BUILD_COMMAND}")
+        ws = WebServer(config, run_option, path, logger)
+        log.debug(f"Start webserver {config.name} in subprocess")
+        proc = subprocess.Popen(
+            [run_option.RUN_COMMAND], shell=True, stdout=subprocess.PIPE
+        )
+        log.info(f"started {proc.pid}")
+        ws._server_process = proc  # type: ignore
+        return ws
+
+    def run(self, scenario: Scenario) -> BenchResult:
+        self.log.info(f"test {scenario.name}")
+        process = subprocess.run(
+            scenario.wrk_command, shell=True, stdout=subprocess.PIPE
+        )
+        return BenchResult.create_from_wrk_output(
+            webserver_name=self.config.name,
+            language=self.config.language,
+            test_name=scenario.name,
+            database=database_name(self.run_option, scenario.name),
+            orm=self.run_option.orm
+            if scenario.name not in STATELESS_TEST_NAMES
+            else None,
+            output=process.stdout.decode("utf-8"),
+        )
+
+    def finish(self):
+        if not self._server_process:
+            raise Exception("Server process is not started")
+
+        self.log.info(f"terminate webserver {self._server_process.pid}")
+        p = psutil.Process(self._server_process.pid)
+        for child in p.children(recursive=True):
+            try:
+                child.kill()
+            except Exception as e:
+                self.log.error("Failed to kill child process: " + str(e))
+        p.kill()
+
+
+def clean_db(logger):
+    logger.debug("Clean DB")
     os.system(
         "psql postgresql://postgres:pass@localhost:15432/webservers_bench < postgres_db.sql"
     )
@@ -98,13 +176,24 @@ def clean_db():
     time.sleep(1)
 
 
-def database_name(config: dict, test_name: str) -> str:
-    if test_name in STATELESS_TEST_NAMES or not config.get("database"):
+def database_name(config: RunOption, test_name: str | None) -> str | None:
+    if test_name and test_name in STATELESS_TEST_NAMES or not config.database:
         return None
-    res = config["database"]
-    if config.get("db_client"):
-        res += f"[{config['db_client']}]"
+    res = config.database
+    if config.db_client:
+        res += f"[{config.db_client}]"
     return res
+
+
+def load_webserver(ws_path: Path, logger) -> WebServerConfig:
+    filename = f"{ws_path}/config.toml"
+    with open(filename, "rb") as f:
+        raw_config = tomllib.load(f)
+        try:
+            return WebServerConfig(**raw_config)
+        except Exception as e:
+            logger.error(raw_config)
+            raise e
 
 
 def check_service(logger):
@@ -112,12 +201,8 @@ def check_service(logger):
     start_at = datetime.datetime.now()
     while cnt > 0:
         try:
-            ping_res = requests.get(f"{WEBSERVER_ADDRES}ping/")
+            ping_res = requests.get(f"{WEBSERVER_ADDRESS}/ping/")
             if ping_res.status_code == 200:
-
-                # finish_at = datetime.datetime.now()
-                # logger.info(f"Startup time: {(finish_at - start_at).seconds} sec")
-
                 return
         except Exception:
             pass
@@ -128,109 +213,59 @@ def check_service(logger):
 
 
 if __name__ == "__main__":
-    today = datetime.date.today()
-    logger.add(
-        f"./logs/{today}.log", format="{time:HH:mm:ss} {extra[webserver]} {message}"
-    )
-    # logger.add(
-    #     sys.stdout, format="{time:HH:mm:ss} {extra[webserver]} {message}"
-    # )
-    root_logger = logger.bind(webserver="root")
+    logger.add(LOG_FILE, format=LOGGING_FORMAT)
+    log = logger.bind(webserver="root")
+    log.info("Running benchmarks")
 
-    root_logger.info("Running benchmarks")
-
-    finished = set()
-    summary = BenchSummary(created_at=datetime.date.today(), results=[])
+    summary = BenchSummary(created_at=TODAY, results=[])
     errors = []
-    for web_server in web_servers_path.iterdir():
+    for web_server_path in Path("web_servers").iterdir():
         try:
-            with open(f"{web_server}/config.toml", "rb") as f:
-                config = tomllib.load(f)
-            for run_setup_name, run_option in config["run_options"].items():
-                webserver_repr = f"{config['name']}-{database_name(run_option, None)}"
-                webserver_logger = logger.bind(webserver=webserver_repr)
+            config = load_webserver(web_server_path, log)
 
-                # if config["language"] != "java":
-                #     continue
-                # if config["name"] not in ("gin1", "fasthttp1", "aiohttp"):
-                #     continue
-                # fast test
-                # if len(finished) == 2:
-                #     continue
-                # if not run_option.get('orm'):
-                #     continue
+            finished = set()
+            for run_setup_name, run_option in config.run_options.items():
+                if config.name not in ("gin1", "fasthttp1", "hyper"):
+                    continue
 
-                webserver_logger.debug(
-                    f"Running benchmarks for {config['name']} {run_setup_name}"
+                log.debug(f"Running benchmarks for {config.name} {run_setup_name}")
+                clean_db(log)
+
+                web_server = WebServer.build_and_run(
+                    config, run_option, web_server_path, log
                 )
-                webserver_logger.debug(f"Build {config['name']}")
-                # output = subprocess.check_output(f"cd {web_server} && {run_option['BUILD_COMMAND']}")
-                # webserver_logger.info(output)
-                os.system(f"cd {web_server} && {run_option['BUILD_COMMAND']}")
-                webserver_logger.debug(
-                    f"Start webserver {config['name']} in subprocess"
-                )
-                webserver_logger.debug("Clean DB")
-                clean_db()
-                web_server_process = subprocess.Popen(
-                    [run_option["RUN_COMMAND"]],
-                    shell=True,
-                    stdout=subprocess.PIPE,
-                )
-                webserver_logger.info(f"started {web_server_process.pid}")
+
                 try:
                     for wrk_test in WRK_TESTS:
-                        webserver_logger.info(f"check webserver")
-                        check_service(webserver_logger)
+                        scenario_key = f"{config.name}_{wrk_test.name}"
+
+                        log.info(f"check webserver {scenario_key}")
+                        check_service(log)
                         if (
-                            wrk_test["name"] in STATELESS_TEST_NAMES
-                            and f"{config['name']}_{wrk_test['name']}" in finished
+                            wrk_test.name in STATELESS_TEST_NAMES
+                            and scenario_key in finished
                         ):
                             continue
+
                         try:
-                            webserver_logger.info(f"test {wrk_test['name']}")
-                            wrk_process = subprocess.run(
-                                wrk_test["wrk_command"],
-                                shell=True,
-                                stdout=subprocess.PIPE,
-                            )
-                            # webserver_logger.debug(f"{wrk_test['name']}; result: {wrk_process.stdout}")
-                            result = BenchResult.create_from_wrk_output(
-                                webserver_name=config["name"],
-                                language=config["language"],
-                                test_name=wrk_test["name"],
-                                database=database_name(run_option, wrk_test["name"]),
-                                orm=run_option.get("orm")
-                                if wrk_test["name"] not in STATELESS_TEST_NAMES
-                                else None,
-                                output=wrk_process.stdout,
-                            )
+                            result = web_server.run(wrk_test)
+
                             summary.results.append(result)
-                            finished.add(f"{config['name']}_{wrk_test['name']}")
+                            finished.add(scenario_key)
                         except Exception as e:
-                            webserver_logger.error(
-                                f"Failed to run {wrk_test['name']} test {e}"
+                            log.error(
+                                f"Failed to run {scenario_key} cause of error: {e}"
                             )
+
                 finally:
-                    webserver_logger.error(
-                        f"terminate webserver {web_server_process.pid}"
-                    )
-                    p = psutil.Process(web_server_process.pid)
-                    for child in p.children(recursive=True):
-                        try:
-                            child.kill()
-                        except Exception as e:
-                            webserver_logger.error(
-                                "Failed to kill child process: " + str(e)
-                            )
-                    p.kill()
+                    web_server.finish()  # type: ignore
                     time.sleep(5)
-        except FileNotFoundError:
-            root_logger.warning(
-                f"Skipping {web_server} as it doesn't have a config.toml file"
-            )
+
+        except Exception as e:
+            log.warning(f"Skipping {web_server_path} cause of error: {e}")
             continue
 
     with open(f"reports/{summary.created_at}.json", "w") as f:
-        f.write(summary.json())
-    root_logger.info("Done")
+        f.write(summary.model_dump_json())
+
+    log.info("Done")

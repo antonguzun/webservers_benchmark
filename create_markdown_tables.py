@@ -1,11 +1,12 @@
+import pandas as pd
+from markdownTable import markdownTable
+
 TESTS = [
     "get user",
     "update user",
     "plain",
     "to json",
 ]
-import pandas as pd
-from markdownTable import markdownTable
 
 if __name__ == "__main__":
     import json
@@ -39,13 +40,16 @@ if __name__ == "__main__":
         try:
             tdf = df[df["test_name"] == test]
             if test in ("plain", "to json"):
+                del tdf["orm"]
+                del tdf["database"]
 
-                del tdf['orm']
-                del tdf['database']
-
-            del tdf['test_name']
+            del tdf["test_name"]
             table = (
-                markdownTable(tdf.sort_values(by="requests_per_second", ascending=False).to_dict(orient="records"))
+                markdownTable(
+                    tdf.sort_values(by="requests_per_second", ascending=False).to_dict(
+                        orient="records"
+                    )
+                )
                 .setParams(row_sep="markdown")
                 .getMarkdown()
             )
