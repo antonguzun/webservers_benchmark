@@ -54,12 +54,6 @@ func UpdateUserHandler(c *gin.Context) {
 		c.String(400, "Bad Request")
 		return
 	}
-	if userUpdate.Username == "" || userUpdate.Email == "" {
-		log.Println("username:", userUpdate.Username)
-		log.Println("email:", userUpdate.Email)
-		c.String(400, "Bad Request")
-		return
-	}
 
 	repo := c.MustGet("databaseConn").(storage.UserRepo)
 

@@ -48,12 +48,6 @@ func (h *Handler) UpdateUserHandler(c *fasthttp.RequestCtx) {
 		c.Error("Bad Request", 400)
 		return
 	}
-	if userUpdate.Username == "" || userUpdate.Email == "" {
-		log.Println("username:", userUpdate.Username)
-		log.Println("email:", userUpdate.Email)
-		c.Error("Bad Request", 400)
-		return
-	}
 
 	user, err := h.repo.UpdateUser(*user_id, userUpdate)
 
