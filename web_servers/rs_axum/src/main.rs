@@ -8,12 +8,21 @@ use axum::{
 };
 use http::header::HeaderValue;
 use serde::{Deserialize, Serialize};
-
 use std::sync::Arc;
-
-use bench::common::{Config, Resources};
-use bench::storage::postgres::user_repo::UserRepo;
 use bench::usecases::users::{get_user, user_updater};
+
+#[cfg(feature = "db_mysql")]
+use bench::common::mysql::{Config, Resources};
+#[cfg(feature = "db_posgres_client_deadpool")]
+use bench::common::postgres::{Config, Resources};
+#[cfg(feature = "db_redis")]
+use bench::common::redis::{Config, Resources};
+#[cfg(feature = "db_mysql")]
+use bench::storage::mysql::user_repo::UserRepo;
+#[cfg(feature = "db_posgres_client_deadpool")]
+use bench::storage::postgres::user_repo::UserRepo;
+#[cfg(feature = "db_redis")]
+use bench::storage::redis::user_repo::UserRepo;
 
 pub async fn get_user_by_id(
     Path(user_id): Path<i32>,
