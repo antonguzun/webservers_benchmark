@@ -18,5 +18,5 @@ db_client = "go-sql-driver"
 [run_options.redis]
 BUILD_COMMAND = "GIN_MODE=release go build main.go"
 RUN_COMMAND = "cd ./web_servers/go_gin/ && GIN_MODE=release DATABASE=redis go run main.go > /dev/null"
-database = "mysql"
+database = "redis"
 db_client = "go-redis"
