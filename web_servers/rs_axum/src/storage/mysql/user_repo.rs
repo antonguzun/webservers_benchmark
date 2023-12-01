@@ -17,6 +17,7 @@ impl UserRepo<'_> {
         UserRepo { db_pool }
     }
 }
+
 impl FromRow for User {
     fn from_row_opt(row: Row) -> std::result::Result<Self, FromRowError> {
         let crated_at: NaiveDateTime = row.get("created_at").unwrap();
@@ -65,7 +66,6 @@ impl UpdateUser for UserRepo<'_> {
     async fn update_user_in_storage(&self, user: UserForUpdate) -> Result<User, AccessModelError> {
         let mut conn = self.db_pool.get_conn().await?;
 
-            
         conn.exec::<u32, _, _>(UPDATE_USER_QUERY, (user.username, user.email, user.user_id))
             .await?;
 
