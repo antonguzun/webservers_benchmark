@@ -6,3 +6,4 @@
  loguru
  ruff
  pre-commit==3.5.0
+ psrecord

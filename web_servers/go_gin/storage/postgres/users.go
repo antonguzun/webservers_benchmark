@@ -2,7 +2,7 @@ package postgres
 
 import (
 	"context"
-	"go_fasthttp/storage"
+	"go_gin/storage"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/randallmlough/pgxscan"

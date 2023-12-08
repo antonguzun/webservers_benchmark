@@ -10,17 +10,19 @@ import requests
 import tomllib
 from loguru import logger
 
+from tools.monitor import MonitoringResult, WebServerMonitor
+
 TODAY = datetime.date.today()
 LOG_FILE = f"./logs/{TODAY}.log"
 LOGGING_FORMAT = format = "{time:HH:mm:ss} {message}"
 
 NUMBER_OF_CONCURRENT_CLIENTS = 100
-TEST_LENGHT_IN_SEC = 60
+TEST_LENGTH_IN_SEC = 15
 WEBSERVER_ADDRESS = "http://127.0.0.1:8000"
 
 
 def create_wrk_command(script_name: str) -> str:
-    return f"wrk -t2 -c{NUMBER_OF_CONCURRENT_CLIENTS} -d{TEST_LENGHT_IN_SEC}s --latency -s ./wrk_scripts/{script_name} {WEBSERVER_ADDRESS}"
+    return f"wrk -t2 -c{NUMBER_OF_CONCURRENT_CLIENTS} -d{TEST_LENGTH_IN_SEC}s --latency -s ./wrk_scripts/{script_name} {WEBSERVER_ADDRESS}"
 
 
 class Scenario(pydantic.BaseModel):
@@ -45,6 +47,12 @@ WRK_TESTS = [GET_USER_BENCH, UPDATE_USER_BENCH, TO_JSON_BENCH, PLAIN_TEXT_BENCH]
 STATELESS_TEST_NAMES = [TO_JSON_BENCH.name, PLAIN_TEXT_BENCH.name]
 
 
+class BenchOptions(pydantic.BaseModel):
+    run_server_command: str
+    build_server_command: str
+    wrk_command: str
+
+
 class BenchResult(pydantic.BaseModel):
     test_name: str
     webserver_name: str
@@ -58,6 +66,9 @@ class BenchResult(pydantic.BaseModel):
     latency_p75: str
     latency_p90: str
     latency_p99: str
+    monitoring_result: MonitoringResult
+
+    bench_options: BenchOptions
 
     @classmethod
     def create_from_wrk_output(
@@ -69,6 +80,10 @@ class BenchResult(pydantic.BaseModel):
         orm: str | None,
         output: str,
         source: str,
+        monitoring_result: MonitoringResult,
+        run_server_command: str,
+        build_server_command: str,
+        wrk_command: str,
     ) -> "BenchResult":
         data = output.splitlines()
         return cls(
@@ -83,6 +98,12 @@ class BenchResult(pydantic.BaseModel):
             latency_p90=data[8].split()[1],
             latency_p99=data[9].split()[1],
             source=source,
+            bench_options=BenchOptions(
+                run_server_command=run_server_command,
+                build_server_command=build_server_command,
+                wrk_command=wrk_command,
+            ),
+            monitoring_result=monitoring_result,
         )
 
 
@@ -130,7 +151,12 @@ class WebServer:
 
     @classmethod
     def build_and_run(
-        cls, config: WebServerConfig, run_option: RunOption, path: Path, log, source: str
+        cls,
+        config: WebServerConfig,
+        run_option: RunOption,
+        path: Path,
+        log,
+        source: str,
     ) -> "WebServer":
         log.debug(f"Build {config.name}")
         os.system(f"cd {path} && {run_option.BUILD_COMMAND}")
@@ -144,10 +170,18 @@ class WebServer:
         return ws
 
     def run(self, scenario: Scenario) -> BenchResult:
+        if not self._server_process:
+            raise Exception("Server process is not started")
+
         self.log.info(f"test {scenario.name}")
-        process = subprocess.run(
-            scenario.wrk_command, shell=True, stdout=subprocess.PIPE
-        )
+
+        monitor = WebServerMonitor(self._server_process.pid, scenario.name)
+        with monitor:
+            process = subprocess.run(
+                scenario.wrk_command, shell=True, stdout=subprocess.PIPE
+            )
+        monitoring_result = monitor.parse_results()
+
         return BenchResult.create_from_wrk_output(
             webserver_name=self.config.name,
             language=self.config.language,
@@ -158,6 +192,10 @@ class WebServer:
             else None,
             output=process.stdout.decode("utf-8"),
             source=self.source,
+            monitoring_result=monitoring_result,
+            run_server_command=self.run_option.RUN_COMMAND,
+            build_server_command=self.run_option.BUILD_COMMAND,
+            wrk_command=scenario.wrk_command,
         )
 
     def finish(self):
@@ -227,9 +265,11 @@ if __name__ == "__main__":
     log = logger.bind(webserver="root")
     log.info("Running benchmarks")
 
-    sha_commit = subprocess.run(
-        "git rev-parse --short HEAD", shell=True, stdout=subprocess.PIPE
-    ).stdout.decode("utf-8").strip()
+    sha_commit = (
+        subprocess.run("git rev-parse --short HEAD", shell=True, stdout=subprocess.PIPE)
+        .stdout.decode("utf-8")
+        .strip()
+    )
 
     summary = BenchSummary(created_at=TODAY, results=[])
     errors = []
@@ -241,6 +281,8 @@ if __name__ == "__main__":
             finished = set()
             for run_setup_name, run_option in config.run_options.items():
                 if config.name in ("hyper[sync]",):
+                    continue
+                if config.name not in ("go_gin"):
                     continue
 
                 log.debug(f"Running benchmarks for {config.name} {run_setup_name}")
