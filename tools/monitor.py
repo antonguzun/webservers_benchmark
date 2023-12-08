@@ -18,13 +18,14 @@ class MonitoringResult(pydantic.BaseModel):
 
 
 class WebServerMonitor:
-    interval_sec = 0.1
-
-    def __init__(self, webserver_pid: int, scenario_name: str):
+    def __init__(
+        self, webserver_pid: int, scenario_name: str, interval_sec: float = 0.1
+    ):
         self.webserver_pid = webserver_pid
         self.scenario_name = scenario_name
         self.filename = f"./logs/{webserver_pid}-{scenario_name.replace(' ', '-')}.log"
         self._monitor_proc = None
+        self.interval_sec = interval_sec
 
     def __enter__(self):
         self._monitor_proc = subprocess.Popen(

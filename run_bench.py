@@ -17,7 +17,7 @@ LOG_FILE = f"./logs/{TODAY}.log"
 LOGGING_FORMAT = format = "{time:HH:mm:ss} {message}"
 
 NUMBER_OF_CONCURRENT_CLIENTS = 100
-TEST_LENGTH_IN_SEC = 15
+TEST_LENGTH_IN_SEC = 60
 WEBSERVER_ADDRESS = "http://127.0.0.1:8000"
 
 
@@ -175,7 +175,11 @@ class WebServer:
 
         self.log.info(f"test {scenario.name}")
 
-        monitor = WebServerMonitor(self._server_process.pid, scenario.name)
+        monitor = WebServerMonitor(
+            self._server_process.pid,
+            scenario.name,
+            interval_sec=TEST_LENGTH_IN_SEC / 100,
+        )
         with monitor:
             process = subprocess.run(
                 scenario.wrk_command, shell=True, stdout=subprocess.PIPE
@@ -282,8 +286,8 @@ if __name__ == "__main__":
             for run_setup_name, run_option in config.run_options.items():
                 if config.name in ("hyper[sync]",):
                     continue
-                if config.name not in ("go_gin"):
-                    continue
+                # if config.name not in ("go_gin"):
+                #     continue
 
                 log.debug(f"Running benchmarks for {config.name} {run_setup_name}")
                 clean_db(log)
@@ -295,7 +299,8 @@ if __name__ == "__main__":
                 try:
                     for wrk_test in WRK_TESTS:
                         scenario_key = f"{config.name}_{wrk_test.name}"
-
+                        # if wrk_test.name not in STATELESS_TEST_NAMES:
+                        #     continue
                         log.info(f"check webserver {scenario_key}")
                         check_service(log)
                         if (

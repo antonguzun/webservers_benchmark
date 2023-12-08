@@ -21,7 +21,7 @@ pub struct Resources {
 
 impl Resources {
     pub async fn create_resources(config: &Config) -> Resources {
-        let db_pool = create_pool(&config);
+        let db_pool: Pool = create_pool(&config);
         Resources { db_pool }
     }
 }

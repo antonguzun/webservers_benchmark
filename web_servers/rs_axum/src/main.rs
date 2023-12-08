@@ -6,10 +6,13 @@ use axum::{
     routing::{get, patch},
     Json, Router,
 };
+use bench::usecases::{
+    base_entities::AccessModelError,
+    users::{entities::UserForUpdate, get_user::FindUserById, user_updater::UpdateUser},
+};
 use http::header::HeaderValue;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
-use bench::usecases::users::{get_user, user_updater};
 
 #[cfg(feature = "db_mysql")]
 use bench::common::mysql::{Config, Resources};
@@ -24,13 +27,31 @@ use bench::storage::postgres::user_repo::UserRepo;
 #[cfg(feature = "db_redis")]
 use bench::storage::redis::user_repo::UserRepo;
 
+struct ApiError(AccessModelError);
+
+impl IntoResponse for ApiError {
+    fn into_response(self) -> Response {
+        let (status_code, error_message) = match self.0 {
+            AccessModelError::NotFoundError => (StatusCode::NOT_FOUND, "User not found"),
+            AccessModelError::AlreadyExists => (StatusCode::CONFLICT, "User already exists"),
+            AccessModelError::TemporaryError => {
+                (StatusCode::SERVICE_UNAVAILABLE, "Temporary error")
+            }
+            AccessModelError::FatalError => (StatusCode::INTERNAL_SERVER_ERROR, "Fatal error"),
+        };
+        (status_code, error_message).into_response()
+    }
+}
+
 pub async fn get_user_by_id(
     Path(user_id): Path<i32>,
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     let user_repo = UserRepo::new(&state.resources.db_pool);
-    let user = get_user::get_user_by_id(&user_repo, user_id).await.unwrap();
-    (StatusCode::OK, Json(user))
+    match user_repo.find_user_by_id(user_id).await {
+        Ok(user) => (StatusCode::OK, Json(user)).into_response(),
+        Err(error) => ApiError(error).into_response(),
+    }
 }
 
 #[derive(Deserialize, Serialize)]
@@ -43,14 +64,17 @@ pub async fn update_user_handler(
     Path(user_id): Path<i32>,
     Json(payload): Json<UserUpdateScheme>,
     state: Arc<AppState>,
-) -> impl IntoResponse {
-    let username = payload.username.to_owned();
-    let email = payload.email.to_string();
+) -> Response {
+    let user_data = UserForUpdate {
+        user_id,
+        username: payload.email.to_string(),
+        email: payload.email.to_string(),
+    };
     let user_access_model = UserRepo::new(&state.resources.db_pool);
-    let user = user_updater::update_user(&user_access_model, username, email, user_id)
-        .await
-        .unwrap();
-    (StatusCode::OK, Json(user))
+    match user_access_model.update_user_in_storage(user_data).await {
+        Ok(user) => (StatusCode::OK, Json(user)).into_response(),
+        Err(error) => ApiError(error).into_response(),
+    }
 }
 
 #[derive(Deserialize, Serialize)]
